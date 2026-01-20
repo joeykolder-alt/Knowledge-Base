@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Moon, Sun, Search, Bell, LogOut } from "lucide-react"
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Logo } from "@/components/ui/logo"
 
 export function Header() {
   const { setTheme, theme } = useTheme()
@@ -18,13 +19,8 @@ export function Header() {
       <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
         <div className="flex items-center gap-6">
           <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
-          <div className="hidden md:flex flex-col">
-            <h1 className="text-foreground font-black tracking-tight text-xl leading-none">
-              Earthlink
-            </h1>
-            <p className="text-[10px] font-bold text-muted-foreground/60 tracking-[0.2em] uppercase mt-1">
-              {language === 'ar' ? "نولج بيس" : "Knowledge Base"}
-            </p>
+          <div className="hidden md:flex">
+            <Logo className="scale-75 origin-left" />
           </div>
         </div>
 
