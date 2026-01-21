@@ -36,128 +36,16 @@ import {
     ArrowUpRight,
     TrendingUp,
     BarChart3,
-    Layout,
-    FileSpreadsheet,
-    FileText,
-    Table2
+    Layout
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 // --- Mock Data ---
 
-const mockExams = [
-    {
-        id: "ex-1",
-        title: "Customer Service Basics",
-        titleAr: "أساسيات خدمة العملاء",
-        department: "Inbound",
-        questions: 15,
-        duration: "45",
-        status: "active",
-        submissions: 124,
-        avgScore: 84
-    },
-    {
-        id: "ex-2",
-        title: "Product Knowledge 2024",
-        titleAr: "معلومات المنتج 2024",
-        department: "Outbound",
-        questions: 20,
-        duration: "60",
-        status: "draft",
-        submissions: 0,
-        avgScore: 0
-    },
-    {
-        id: "ex-3",
-        title: "Compliance & Security",
-        titleAr: "الامتثال والأمن",
-        department: "NOVIP",
-        questions: 10,
-        duration: "30",
-        status: "active",
-        submissions: 89,
-        avgScore: 92
-    },
-    {
-        id: "ex-4",
-        title: "Soft Skills Assessment",
-        titleAr: "تقييم المهارات الناعمة",
-        department: "Inbound",
-        questions: 12,
-        duration: "40",
-        status: "active",
-        submissions: 56,
-        avgScore: 78
-    }
-]
+const mockExams: any[] = []
 
-const mockResults = [
-    {
-        id: "res-1",
-        employee: "Ahmed Mohammed",
-        employeeAr: "أحمد محمد",
-        employeeId: "EMP-0421",
-        department: "Inbound",
-        exam: "Customer Service Basics",
-        score: 95,
-        status: "passed",
-        correctionType: "auto",
-        date: "2024-01-15",
-        answers: [
-            { question: "What is your primary goal?", answer: "Help customers", isCorrect: true },
-            { question: "How to handle angry callers?", answer: "Stay calm", isCorrect: true }
-        ]
-    },
-    {
-        id: "res-2",
-        employee: "Sarah Ali",
-        employeeAr: "سارة علي",
-        employeeId: "EMP-0982",
-        department: "Outbound",
-        exam: "Compliance & Security",
-        score: 88,
-        status: "passed",
-        correctionType: "waiting",
-        date: "2024-01-16",
-        answers: [
-            { question: "Define security.", answer: "Protecting data", isCorrect: true },
-            { question: "Explain the protocols.", answer: "I don't know yet", isCorrect: false }
-        ]
-    },
-    {
-        id: "res-3",
-        employee: "Omar Hassan",
-        employeeAr: "عمر حسان",
-        employeeId: "EMP-0115",
-        department: "Inbound",
-        exam: "Customer Service Basics",
-        score: 45,
-        status: "failed",
-        correctionType: "auto",
-        date: "2024-01-14",
-        answers: [
-            { question: "What is your primary goal?", answer: "Ignore them", isCorrect: false },
-            { question: "How to handle angry callers?", answer: "Hang up", isCorrect: false }
-        ]
-    },
-    {
-        id: "res-4",
-        employee: "Laila Khalid",
-        employeeAr: "ليلى خالد",
-        employeeId: "EMP-0552",
-        department: "NOVIP",
-        exam: "Soft Skills Assessment",
-        score: 72,
-        status: "passed",
-        correctionType: "auto",
-        date: "2024-01-17",
-        answers: [
-            { question: "What is teamwork?", answer: "Collaboration", isCorrect: true }
-        ]
-    }
-]
+const mockResults: any[] = []
 
 export default function AdminExamPage() {
     const { language, direction } = useLanguage()
@@ -167,15 +55,34 @@ export default function AdminExamPage() {
     const [exams, setExams] = React.useState<any[]>([])
 
     React.useEffect(() => {
-        const storedExams = JSON.parse(localStorage.getItem("knowledge_exams") || "[]")
-        setExams([...mockExams, ...storedExams])
+        // Load exams from localStorage
+        const loadExams = () => {
+            if (typeof window !== 'undefined') {
+                try {
+                    const storedExams = JSON.parse(localStorage.getItem("knowledge_exams") || "[]")
+                    setExams(storedExams)
+                } catch (error) {
+                    console.error("Failed to load exams:", error)
+                    setExams([])
+                }
+            }
+        }
+
+        loadExams()
+
+        // Listen for storage events (to sync across tabs)
+        window.addEventListener('storage', loadExams)
+
+        return () => {
+            window.removeEventListener('storage', loadExams)
+        }
     }, [])
 
     const handleDeleteExam = (id: string) => {
         const updatedExams = exams.filter(ex => ex.id !== id)
         setExams(updatedExams)
 
-        // Update localStorage (only remove from stored ones, not mock)
+        // Update localStorage
         const storedExams = JSON.parse(localStorage.getItem("knowledge_exams") || "[]")
         const updatedStored = storedExams.filter((ex: any) => ex.id !== id)
         localStorage.setItem("knowledge_exams", JSON.stringify(updatedStored))
@@ -232,20 +139,6 @@ export default function AdminExamPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" className="rounded-xl h-11 px-4 font-bold border-emerald-500/20 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10 hover:border-emerald-500/30 gap-2 transition-all">
-                            <FileSpreadsheet className="size-4" />
-                            <span className="hidden sm:inline">{language === 'ar' ? "إكسل" : "Excel"}</span>
-                        </Button>
-                        <Button variant="outline" className="rounded-xl h-11 px-4 font-bold border-rose-500/20 bg-rose-500/5 text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/30 gap-2 transition-all">
-                            <FileText className="size-4" />
-                            <span className="hidden sm:inline">{language === 'ar' ? "بي دي إف" : "PDF"}</span>
-                        </Button>
-                        <Button variant="outline" className="rounded-xl h-11 px-4 font-bold border-teal-500/20 bg-teal-500/5 text-teal-500 hover:bg-teal-500/10 hover:border-teal-500/30 gap-2 transition-all">
-                            <Table2 className="size-4" />
-                            <span className="hidden sm:inline">{language === 'ar' ? "جوجل شيت" : "Google Sheet"}</span>
-                        </Button>
-                    </div>
                 </div>
             </div>
 
@@ -253,14 +146,14 @@ export default function AdminExamPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatsCard
                     title={language === 'ar' ? "إجمالي الامتحانات" : "Total Exams"}
-                    value={mockExams.length.toString()}
+                    value={exams.length.toString()}
                     icon={Layout}
                     trend="+2"
                     color="blue"
                 />
                 <StatsCard
                     title={language === 'ar' ? "الامتحانات النشطة" : "Active Exams"}
-                    value={mockExams.filter(e => e.status === 'active').length.toString()}
+                    value={exams.filter(e => e.status === 'active').length.toString()}
                     icon={CheckCircle2}
                     trend="0"
                     color="emerald"

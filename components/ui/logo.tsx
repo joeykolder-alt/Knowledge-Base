@@ -9,7 +9,7 @@ interface LogoProps {
 
 export function Logo({ className, showText = true }: LogoProps) {
     return (
-        <div className={cn("flex flex-col items-start", className)}>
+        <div className={cn("flex flex-col items-start", className)} dir="ltr">
             <div className="flex items-center gap-2">
                 {/* Single Book Icon */}
                 <div className="shrink-0 flex items-center">

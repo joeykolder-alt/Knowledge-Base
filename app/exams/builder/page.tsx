@@ -99,6 +99,33 @@ export default function ExamBuilderPage() {
             }
         }
     }, [editId])
+    const compressImage = (base64Str: string, maxWidth = 800, maxHeight = 600): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image()
+            img.src = base64Str
+            img.onload = () => {
+                const canvas = document.createElement('canvas')
+                let width = img.width
+                let height = img.height
+
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height
+                    width = maxWidth
+                }
+                if (height > maxHeight) {
+                    width = (maxHeight / height) * width
+                    height = maxHeight
+                }
+
+                canvas.width = width
+                canvas.height = height
+                const ctx = canvas.getContext('2d')
+                ctx?.drawImage(img, 0, 0, width, height)
+                resolve(canvas.toDataURL('image/jpeg', 0.7)) // Compress to JPEG with 0.7 quality
+            }
+        })
+    }
+
     const [isAddingQuestion, setIsAddingQuestion] = React.useState(false)
     const [editingQuestionId, setEditingQuestionId] = React.useState<string | null>(null)
 
@@ -120,8 +147,9 @@ export default function ExamBuilderPage() {
         const file = e.target.files?.[0]
         if (file) {
             const reader = new FileReader()
-            reader.onloadend = () => {
-                setNewQuestion(prev => ({ ...prev, image: reader.result as string }))
+            reader.onloadend = async () => {
+                const compressed = await compressImage(reader.result as string)
+                setNewQuestion(prev => ({ ...prev, image: compressed }))
             }
             reader.readAsDataURL(file)
         }
@@ -164,33 +192,46 @@ export default function ExamBuilderPage() {
     }
 
     const handleSaveExam = () => {
-        const examData = {
-            id: editId || Math.random().toString(36).substr(2, 9),
-            title,
-            titleAr: title, // Simplified for now
-            department,
-            questions: questions.length,
-            duration,
-            status: status,
-            submissions: 0,
-            avgScore: 0,
-            questionsList: questions,
-            description,
-            passingGrade,
-            updatedAt: new Date().toISOString()
+        try {
+            const examData = {
+                id: editId || Math.random().toString(36).substr(2, 9),
+                title,
+                titleAr: title, // Simplified for now
+                department,
+                questions: questions.length,
+                duration,
+                status: status,
+                submissions: 0,
+                avgScore: 0,
+                questionsList: questions,
+                description,
+                passingGrade,
+                updatedAt: new Date().toISOString()
+            }
+
+            const storedExams = JSON.parse(localStorage.getItem("knowledge_exams") || "[]")
+            let updatedExams;
+
+            if (editId) {
+                updatedExams = storedExams.map((ex: any) => ex.id === editId ? examData : ex)
+            } else {
+                updatedExams = [...storedExams, examData]
+            }
+
+            localStorage.setItem("knowledge_exams", JSON.stringify(updatedExams))
+            router.push('/exams/admin')
+        } catch (error: any) {
+            console.error("Failed to save exam:", error)
+            if (error.name === 'QuotaExceededError' || error.message.includes('quota')) {
+                alert(language === 'ar'
+                    ? "عذراً، مساحة التخزين ممتلئة. يرجى حذف بعض الامتحانات القديمة لتتمكن من الحفظ."
+                    : "Sorry, storage is full. Please delete some old exams to be able to save.")
+            } else {
+                alert(language === 'ar'
+                    ? "حدث خطأ أثناء حفظ الامتحان. يرجى المحاولة مرة أخرى."
+                    : "An error occurred while saving the exam. Please try again.")
+            }
         }
-
-        const storedExams = JSON.parse(localStorage.getItem("knowledge_exams") || "[]")
-        let updatedExams;
-
-        if (editId) {
-            updatedExams = storedExams.map((ex: any) => ex.id === editId ? examData : ex)
-        } else {
-            updatedExams = [...storedExams, examData]
-        }
-
-        localStorage.setItem("knowledge_exams", JSON.stringify(updatedExams))
-        router.push('/exams/admin')
     }
 
     return (
@@ -287,7 +328,7 @@ export default function ExamBuilderPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{language === 'ar' ? "درجة النجاح %" : "Passing Grade %"}</Label>
+                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{language === 'ar' ? "درجة النجاح" : "Passing Grade"}</Label>
                                     <div className="relative">
                                         <Target className="absolute start-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground/40" />
                                         <Input
