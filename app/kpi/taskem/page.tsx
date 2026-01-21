@@ -3,17 +3,13 @@
 import * as React from "react"
 import {
     Plus,
-    Calendar as CalendarIcon,
-    X,
     User,
     Target,
-    Clock,
     Trash2,
     Edit,
     RefreshCw,
     Hourglass,
     MoreHorizontal,
-    Timer,
     CheckCircle2,
     TrendingUp,
     AlertCircle,
@@ -25,7 +21,6 @@ import {
     FileText,
     Download,
     Eraser,
-    ChevronRight,
     FileBarChart
 } from "lucide-react"
 import { useLanguage } from "@/components/providers"
@@ -39,11 +34,9 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -51,7 +44,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 interface Task {
@@ -113,7 +105,16 @@ function CountdownTimer({ deadline, status }: { deadline: string, status: string
     return <span className="font-mono text-sm font-bold tracking-tight">{timeLeft}</span>
 }
 
-function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: { task: Task, t: any, now: Date, handleEdit: any, handleDelete: any, handleOpenUpdate: any }) {
+interface TaskCardProps {
+    task: Task;
+    t: any;
+    now: Date;
+    handleEdit: (task: Task) => void;
+    handleDelete: (id: number) => void;
+    handleOpenUpdate: (task: Task) => void;
+}
+
+function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: TaskCardProps) {
     const status = getTaskStatus(task, now)
     const remaining = Math.max(0, Number(task.targetValue) - Number(task.currentValue))
     const progress = Number(task.progress)
@@ -304,7 +305,7 @@ export default function TaskEmPage() {
     React.useEffect(() => {
         const saved = localStorage.getItem('kpi_tasks')
         if (saved) {
-            try { setTasks(JSON.parse(saved)) } catch (e) { }
+            try { setTasks(JSON.parse(saved)) } catch (_) { }
         }
     }, [])
 
@@ -689,7 +690,7 @@ export default function TaskEmPage() {
                                         <div className="space-y-2.5">
                                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 px-1">{language === 'ar' ? "سجل المهام" : "Detailed Task Log"}</h4>
                                             <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/10 hover:scrollbar-thumb-muted-foreground/20">
-                                                {reportResult.tasks.map((task: any) => (
+                                                {reportResult.tasks.map((task: Task) => (
                                                     <div key={task.id} className="flex items-center justify-between p-2.5 bg-background border border-border/50 rounded-lg group hover:border-[#0039a6]/20 transition-all hover:translate-x-1 duration-200">
                                                         <div className="flex items-center gap-3">
                                                             <div className={cn(

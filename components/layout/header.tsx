@@ -5,26 +5,50 @@ import { useTheme } from "next-themes"
 import { useLanguage } from "@/components/providers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Moon, Sun, Search, Bell, LogOut } from "lucide-react"
+import { Moon, Sun, Search, Bell } from "lucide-react"
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Logo } from "@/components/ui/logo"
 
 export function Header() {
   const { setTheme, theme } = useTheme()
   const { language, toggleLanguage } = useLanguage()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <header className="sticky top-0 z-30 transition-all duration-300">
+        <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
+          <div className="flex items-center gap-6">
+            <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
+            <div className="hidden md:flex">
+              <Logo className="scale-75 origin-left" />
+            </div>
+          </div>
+          <div className="flex flex-1 items-center justify-end gap-x-6">
+            <div className="w-full flex-1 md:w-auto md:flex-none hidden lg:block" />
+            <nav className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-muted/50">
+              <div className="h-10 w-10" />
+              <div className="w-[1px] h-4 bg-muted-foreground/20 mx-1" />
+              <div className="h-10 w-10" />
+            </nav>
+          </div>
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="sticky top-0 z-30 transition-all duration-300">
       <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
         <div className="flex items-center gap-6">
           <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
-          <div className="hidden md:flex flex-col">
-            <h1 className="text-foreground font-black tracking-tight text-xl leading-none">
-              Earthlink
-            </h1>
-            <p className="text-[10px] font-bold text-muted-foreground/60 tracking-[0.2em] uppercase mt-1">
-              {language === 'ar' ? "نولج بيس" : "Knowledge Base"}
-            </p>
+          <div className="hidden md:flex">
+            <Logo className="scale-75 origin-left" />
           </div>
         </div>
 
@@ -61,7 +85,7 @@ export function Header() {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="h-10 w-10 rounded-xl hover:bg-background hover:shadow-sm text-muted-foreground"
             >
-              {theme === "dark" ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5 text-primary" />}
+              {mounted && theme === "dark" ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5 text-primary" />}
             </Button>
             <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-background hover:shadow-sm relative text-muted-foreground">
               <Bell className="h-5 w-5" />

@@ -1,7 +1,8 @@
 "use client"
 
+import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, LineChart, Line, CartesianGrid } from "recharts"
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { useLanguage } from "@/components/providers"
 
 const data = [
@@ -51,149 +52,156 @@ const dataExamEmployees = [
 
 export function OverviewCharts() {
     const { language } = useLanguage()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return <div className="grid gap-6 md:grid-cols-2 min-h-[400px]" />
 
     return (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 min-w-0">
             {/* Chart 1: Books (Blue Gradient) */}
-            <Card className="shadow-sm border border-border bg-card">
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold text-foreground">{language === 'ar' ? "عدد الكتب" : "Books Count"}</CardTitle>
+            <Card className="shadow-sm border bg-card rounded-[2rem]">
+                <CardHeader className="pt-8 px-8">
+                    <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{language === 'ar' ? "عدد الكتب" : "Books Count"}</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[280px]">
+                <CardContent className="h-[320px] px-4 pb-8">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorBlue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
                                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <YAxis stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
+                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dy: 10 }} />
+                            <YAxis stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dx: -10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
                             <Tooltip
-                                cursor={{ stroke: 'var(--border)', strokeWidth: 2 }}
-                                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', border: '1px solid var(--border)' }}
-                                itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                                labelStyle={{ color: 'var(--muted-foreground)', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
+                                cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', border: '1px solid hsl(var(--border))', padding: '12px' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorBlue)" />
+                            <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorBlue)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
             {/* Chart 2: Shelves (Emerald Gradient) */}
-            <Card className="shadow-sm border border-border bg-card">
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold text-foreground">{language === 'ar' ? "عدد الرفوف" : "Shelves Count"}</CardTitle>
+            <Card className="shadow-sm border bg-card rounded-[2rem]">
+                <CardHeader className="pt-8 px-8">
+                    <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{language === 'ar' ? "عدد الرفوف" : "Shelves Count"}</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[280px]">
+                <CardContent className="h-[320px] px-4 pb-8">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={dataActivity} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={dataActivity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorEmerald" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
                                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <YAxis stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
+                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dy: 10 }} />
+                            <YAxis stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dx: -10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
                             <Tooltip
-                                cursor={{ stroke: 'var(--border)', strokeWidth: 2 }}
-                                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', border: '1px solid var(--border)' }}
-                                itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                                labelStyle={{ color: 'var(--muted-foreground)', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
+                                cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', border: '1px solid hsl(var(--border))', padding: '12px' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="val" stroke="#10b981" strokeWidth={3} fill="url(#colorEmerald)" dot={{ r: 4, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="val" stroke="#10b981" strokeWidth={4} fill="url(#colorEmerald)" activeDot={{ r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
             {/* NEW Chart 3: Registered Users (Blue-Royal Gradient) */}
-            <Card className="shadow-sm border border-border bg-card">
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold text-foreground">{language === 'ar' ? "عدد المستخدمين" : "Users Count"}</CardTitle>
+            <Card className="shadow-sm border bg-card rounded-[2rem]">
+                <CardHeader className="pt-8 px-8">
+                    <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{language === 'ar' ? "عدد المستخدمين" : "Users Count"}</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[280px]">
+                <CardContent className="h-[320px] px-4 pb-8">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={dataUsers} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={dataUsers} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorRoyalBlue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
+                                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15} />
                                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <YAxis stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
+                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dy: 10 }} />
+                            <YAxis stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dx: -10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
                             <Tooltip
-                                cursor={{ stroke: 'var(--border)', strokeWidth: 2 }}
-                                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', border: '1px solid var(--border)' }}
-                                itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                                labelStyle={{ color: 'var(--muted-foreground)', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
+                                cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', border: '1px solid hsl(var(--border))', padding: '12px' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="val" stroke="#2563eb" strokeWidth={3} fill="url(#colorRoyalBlue)" dot={{ r: 4, fill: "#2563eb", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="val" stroke="#2563eb" strokeWidth={4} fill="url(#colorRoyalBlue)" activeDot={{ r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
             {/* NEW Chart 4: KPI Evolution (Orange Gradient) */}
-            <Card className="shadow-sm border border-border bg-card">
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold text-foreground">{language === 'ar' ? "تطور مؤشرات KPI" : "KPI Evolution"}</CardTitle>
+            <Card className="shadow-sm border bg-card rounded-[2rem]">
+                <CardHeader className="pt-8 px-8">
+                    <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{language === 'ar' ? "تطور مؤشرات KPI" : "KPI Evolution"}</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[280px]">
+                <CardContent className="h-[320px] px-4 pb-8">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={dataKPIEvolution} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={dataKPIEvolution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorOrange" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
+                                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.15} />
                                     <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <YAxis stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
+                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dy: 10 }} />
+                            <YAxis stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dx: -10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
                             <Tooltip
-                                cursor={{ stroke: 'var(--border)', strokeWidth: 2 }}
-                                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', border: '1px solid var(--border)' }}
-                                itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                                labelStyle={{ color: 'var(--muted-foreground)', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
+                                cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', border: '1px solid hsl(var(--border))', padding: '12px' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="val" stroke="#f59e0b" strokeWidth={3} fill="url(#colorOrange)" dot={{ r: 4, fill: "#f59e0b", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="val" stroke="#f59e0b" strokeWidth={4} fill="url(#colorOrange)" activeDot={{ r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            {/* NEW Chart 5: Exam Employees (Cyan Gradient) */}
-            <Card className="shadow-sm border border-border bg-card md:col-span-2 lg:col-span-2">
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold text-foreground">{language === 'ar' ? "موظفو الامتحان (شهري)" : "Exam Employees (Monthly)"}</CardTitle>
+            {/* NEW Chart 5: Exam Employees (Monthly) */}
+            <Card className="shadow-sm border bg-card rounded-[2rem] md:col-span-2">
+                <CardHeader className="pt-8 px-8">
+                    <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{language === 'ar' ? "موظفو الامتحان (شهري)" : "Exam Employees (Monthly)"}</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[280px]">
+                <CardContent className="h-[320px] px-4 pb-8">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={dataExamEmployees} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart data={dataExamEmployees} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCyan" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.2} />
+                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.15} />
                                     <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <YAxis stroke="currentColor" className="text-muted-foreground/60" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
+                            <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dy: 10 }} />
+                            <YAxis stroke="currentColor" className="text-muted-foreground/40" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} tick={{ dx: -10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
                             <Tooltip
-                                cursor={{ stroke: 'var(--border)', strokeWidth: 2 }}
-                                contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', border: '1px solid var(--border)' }}
-                                itemStyle={{ color: 'var(--foreground)', fontWeight: 'bold' }}
-                                labelStyle={{ color: 'var(--muted-foreground)', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
+                                cursor={{ stroke: 'hsl(var(--muted))', strokeWidth: 1 }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', border: '1px solid hsl(var(--border))', padding: '12px' }}
+                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+                                labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
                             />
-                            <Area type="monotone" dataKey="val" stroke="#06b6d4" strokeWidth={3} fill="url(#colorCyan)" dot={{ r: 4, fill: "#06b6d4", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="val" stroke="#06b6d4" strokeWidth={4} fill="url(#colorCyan)" activeDot={{ r: 6, strokeWidth: 0 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </CardContent>

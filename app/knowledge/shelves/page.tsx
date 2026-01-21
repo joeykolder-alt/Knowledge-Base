@@ -12,10 +12,18 @@ import Link from "next/link"
 
 import { useLanguage } from "@/components/providers"
 
+interface Shelf {
+    id: number;
+    title: string;
+    subtitle: string;
+    books: number;
+    cover: string;
+}
+
 export default function ShelvesPage() {
     const { language } = useLanguage()
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
-    const [shelvesList, setShelvesList] = useState<any[]>([])
+    const [shelvesList, setShelvesList] = useState<Shelf[]>([])
     const [isLoaded, setIsLoaded] = useState(false)
 
     // Load from localStorage
@@ -140,7 +148,7 @@ export default function ShelvesPage() {
             ))
         } else {
             const newShelf = {
-                id: Date.now(),
+                id: new Date().getTime(),
                 title: name,
                 subtitle: desc || "New Shelf",
                 books: 0,
@@ -161,7 +169,7 @@ export default function ShelvesPage() {
         setCurrentShelfId(null)
     }
 
-    const handleEdit = (e: React.MouseEvent, shelf: any) => {
+    const handleEdit = (e: React.MouseEvent, shelf: Shelf) => {
         e.preventDefault()
         e.stopPropagation()
         setName(shelf.title)

@@ -10,13 +10,28 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <p className="text-muted-foreground">نظرة عامة على أداء النظام</p>
+    <div className="space-y-10 pb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-4xl font-[900] tracking-tighter text-foreground">
+            Dashboard
+          </h2>
+          <div className="flex items-center gap-2 text-muted-foreground/60 font-medium text-sm">
+            <span>نظرة عامة على أداء النظام</span>
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+            <span>آخر تحديث: منذ ٥ دقائق</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 bg-white/50 p-1.5 rounded-2xl border border-slate-200/60 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl shadow-sm border border-slate-100 font-bold text-xs text-primary">
+            <span>Last 30 Days</span>
+          </div>
+          <button className="p-2 hover:bg-white rounded-xl transition-colors text-muted-foreground">
+            <Activity className="size-4" />
+          </button>
         </div>
       </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="KPI مؤشرات"

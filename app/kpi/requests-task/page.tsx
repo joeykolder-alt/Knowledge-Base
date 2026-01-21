@@ -28,7 +28,6 @@ import {
     DialogContent,
     DialogDescription,
     DialogFooter,
-    DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -72,7 +71,7 @@ export default function RequestsTaskPage() {
     React.useEffect(() => {
         const saved = localStorage.getItem('request_tasks')
         if (saved) {
-            try { setTasks(JSON.parse(saved)) } catch (e) { }
+            try { setTasks(JSON.parse(saved)) } catch (_) { }
         }
     }, [])
 
@@ -128,7 +127,7 @@ export default function RequestsTaskPage() {
         } else {
             const newTask: RequestTask = {
                 ...formData,
-                id: Date.now(),
+                id: new Date().getTime(),
                 status: 'In Progress',
                 createdAt: new Date().toISOString()
             }
@@ -156,7 +155,7 @@ export default function RequestsTaskPage() {
                 const newStatus = isCompleting ? 'Completed' : 'In Progress'
                 return {
                     ...t,
-                    status: newStatus as any,
+                    status: newStatus as RequestTask['status'],
                     completedAt: isCompleting ? new Date().toISOString() : undefined
                 }
             }

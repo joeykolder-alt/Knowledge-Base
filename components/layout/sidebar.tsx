@@ -13,13 +13,12 @@ import {
     BarChart3,
     FileEdit,
     Settings,
-    Search,
     ChevronDown,
     LogOut,
-    Sparkles,
     MessageSquarePlus,
-    Library
 } from "lucide-react"
+
+import { Logo } from "@/components/ui/logo"
 
 import {
     Sidebar,
@@ -36,8 +35,6 @@ import {
     SidebarGroupLabel,
     SidebarGroupContent,
     SidebarRail,
-    SidebarProvider,
-    useSidebar,
 } from "@/components/ui/sidebar"
 import {
     DropdownMenu,
@@ -48,7 +45,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
 
 // --- Menu Data Structure ---
 const data = {
@@ -146,7 +142,6 @@ export function AppSidebar() {
 
     // Helper to check active state
     const isActive = (url: string) => pathname === url
-    const isGroupActive = (items: { url: string }[]) => items.some(item => pathname.startsWith(item.url))
 
     return (
         <Sidebar
@@ -155,41 +150,41 @@ export function AppSidebar() {
             variant="sidebar"
             className="border-sidebar-border bg-sidebar text-sidebar-foreground"
         >
-            <SidebarHeader className="h-24 flex items-center justify-between px-6 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
-                <div className="flex items-center gap-4 overflow-hidden group-data-[collapsible=icon]:hidden">
-                    <div className="flex items-center justify-center size-12 shrink-0 rounded-2xl bg-gradient-to-br from-primary to-blue-700 text-white shadow-xl shadow-primary/30 ring-4 ring-primary/10 transition-transform hover:scale-105 duration-300">
-                        <Library className="size-6 fill-white/20" />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                        <span className="font-black text-lg tracking-tighter text-foreground italic underline decoration-primary/50 underline-offset-4 decoration-2">Earthlink</span>
-                        <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase opacity-70">
-                            {language === 'ar' ? 'نولج بيس' : 'Knowledge Base'}
-                        </span>
-                    </div>
+            <SidebarHeader className="h-24 flex items-center justify-center px-6 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
+                <div className="flex items-center justify-center overflow-hidden group-data-[collapsible=icon]:hidden">
+                    <Logo />
                 </div>
                 <div className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center hidden">
-                    <div className="flex items-center justify-center size-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-transform duration-300">
-                        <Library className="size-5 fill-white/20" />
-                    </div>
+                    <Logo showText={false} />
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="py-8 gap-4 px-2">
+            <SidebarContent className="py-8 gap-6 px-2 no-scrollbar">
                 {/* Overview Group */}
                 <SidebarGroup className="px-4">
-                    <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-slate-400/80 mb-2">{language === 'ar' ? "نظرة عامة" : "Overview"}</SidebarGroupLabel>
+                    <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-3">{language === 'ar' ? "نظرة عامة" : "Overview"}</SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <SidebarMenu className="gap-1.5">
+                        <SidebarMenu className="gap-2">
                             {data.overview.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton
                                         asChild
                                         isActive={isActive(item.url)}
                                         tooltip={language === 'ar' ? item.titleAr : item.title}
+                                        className={cn(
+                                            "h-11 px-4 rounded-xl transition-all duration-300 relative group/btn",
+                                            isActive(item.url)
+                                                ? "bg-primary/10 text-primary font-semibold"
+                                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                        )}
                                     >
                                         <Link href={item.url}>
-                                            <item.icon />
-                                            <span>{language === 'ar' ? item.titleAr : item.title}</span>
+                                            <item.icon className={cn(
+                                                "size-5 transition-all duration-300",
+                                                isActive(item.url) ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
+                                            )} />
+                                            <span className="ms-3">{language === 'ar' ? item.titleAr : item.title}</span>
+                                            <div className="sidebar-active-indicator" />
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -276,32 +271,62 @@ export function AppSidebar() {
 }
 
 // Reusable Group Component for consistent layout
-function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: any) {
+interface SidebarItem {
+    title: string;
+    titleAr: string;
+    url?: string;
+    icon?: React.ElementType;
+    items?: SidebarItem[];
+}
+
+interface GroupProps {
+    label: string;
+    items: SidebarItem[];
+    language: string;
+    pathname: string;
+    isRtl: boolean;
+}
+
+function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: GroupProps) {
     const isActive = (url: string) => pathname === url; // Define isActive here for use in this component
 
     return (
-        <SidebarGroup className="px-4">
-            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2">{label}</SidebarGroupLabel>
+        <SidebarGroup className="px-4 mb-2">
+            <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-3">{label}</SidebarGroupLabel>
             <SidebarGroupContent>
-                <SidebarMenu className="gap-1.5">
-                    {items.map((item: any) => {
+                <SidebarMenu className="gap-2">
+                    {items.map((item) => {
                         // Check if any child is active
-                        const isMainActive = item.items?.some((sub: any) => pathname.startsWith(sub.url))
+                        const isMainActive = item.items?.some((sub) => pathname.startsWith(sub.url || '')) ?? false
 
                         // If it has sub-items (Collapsible Menu)
                         if (item.items) {
                             return (
-                                <CollapsibleMenu key={item.title} item={item} language={language} pathname={pathname} isMainActive={isMainActive} isRtl={isRtl} />
+                                <CollapsibleMenu key={item.title} item={item} language={language} pathname={pathname} isMainActive={isMainActive} />
                             )
                         }
 
                         // Single Item (Fallback)
                         return (
                             <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={language === 'ar' ? item.titleAr : item.title}>
-                                    <Link href={item.url}>
-                                        <item.icon />
-                                        <span>{language === 'ar' ? item.titleAr : item.title}</span>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isActive(item.url || '')}
+                                    tooltip={language === 'ar' ? item.titleAr : item.title}
+                                    className={cn(
+                                        "h-11 px-4 rounded-xl transition-all duration-300 relative group/btn",
+                                        isActive(item.url || '')
+                                            ? "bg-primary/10 text-primary font-semibold"
+                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                    )}
+                                >
+                                    <Link href={item.url!}>
+                                        {item.icon && <item.icon className={cn(
+                                            "size-5 transition-all duration-300",
+                                            isActive(item.url || '') ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
+                                        )} />}
+                                        <span className="ms-3">{language === 'ar' ? item.titleAr : item.title}</span>
+                                        <div className="sidebar-active-indicator" />
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -316,28 +341,56 @@ function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: an
 // Collapsible Menu Item Component
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 
-function CollapsibleMenu({ item, language, pathname, isMainActive, isRtl }: any) {
+interface CollapsibleMenuProps {
+    item: SidebarItem;
+    language: string;
+    pathname: string;
+    isMainActive: boolean;
+}
+
+function CollapsibleMenu({ item, language, pathname, isMainActive }: CollapsibleMenuProps) {
     const [isOpen, setIsOpen] = React.useState(isMainActive)
 
     return (
         <Collapsible defaultOpen={isMainActive} open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={language === 'ar' ? item.titleAr : item.title}>
-                        <item.icon />
-                        <span>{language === 'ar' ? item.titleAr : item.title}</span>
-                        <ChevronDown className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                    <SidebarMenuButton
+                        tooltip={language === 'ar' ? item.titleAr : item.title}
+                        className={cn(
+                            "h-11 px-4 rounded-xl transition-all duration-300 group/btn",
+                            isMainActive
+                                ? "bg-primary/5 text-primary font-semibold"
+                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        )}
+                    >
+                        {item.icon && <item.icon className={cn(
+                            "size-5 transition-all duration-300",
+                            isMainActive ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
+                        )} />}
+                        <span className="ms-3">{language === 'ar' ? item.titleAr : item.title}</span>
+                        <ChevronDown className="ms-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180 opacity-50" />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                    <SidebarMenuSub>
-                        {item.items.map((sub: any) => {
+                    <SidebarMenuSub className="ms-9 ps-4 border-s border-muted/50 gap-1 mt-1">
+                        {item.items?.map((sub) => {
                             const isSubActive = pathname === sub.url
                             return (
                                 <SidebarMenuSubItem key={sub.title}>
-                                    <SidebarMenuSubButton asChild isActive={isSubActive}>
-                                        <Link href={sub.url}>
-                                            <span>{language === 'ar' ? sub.titleAr : sub.title}</span>
+                                    <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isSubActive}
+                                        className={cn(
+                                            "h-9 px-4 rounded-lg transition-all duration-200 relative group/sub",
+                                            isSubActive
+                                                ? "text-primary font-bold"
+                                                : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/30"
+                                        )}
+                                    >
+                                        <Link href={sub.url!}>
+                                            <span className="text-[13px]">{language === 'ar' ? sub.titleAr : sub.title}</span>
+                                            {isSubActive && <div className="absolute left-[-1.1rem] rtl:left-auto rtl:right-[-1.1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />}
                                         </Link>
                                     </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
