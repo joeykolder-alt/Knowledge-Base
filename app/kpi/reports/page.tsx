@@ -16,10 +16,18 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+interface KpiReport {
+    id: number;
+    name: string;
+    month: string;
+    monthLabel: string;
+    createdAt: string;
+}
+
 export default function KpiReportsPage() {
     const { language } = useLanguage()
     const router = useRouter()
-    const [reports, setReports] = React.useState<any[]>([])
+    const [reports, setReports] = React.useState<KpiReport[]>([])
 
     React.useEffect(() => {
         const saved = localStorage.getItem('kpi_reports')

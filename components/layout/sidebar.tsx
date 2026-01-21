@@ -13,12 +13,9 @@ import {
     BarChart3,
     FileEdit,
     Settings,
-    Search,
     ChevronDown,
     LogOut,
-    Sparkles,
     MessageSquarePlus,
-    Library
 } from "lucide-react"
 
 import { Logo } from "@/components/ui/logo"
@@ -38,8 +35,6 @@ import {
     SidebarGroupLabel,
     SidebarGroupContent,
     SidebarRail,
-    SidebarProvider,
-    useSidebar,
 } from "@/components/ui/sidebar"
 import {
     DropdownMenu,
@@ -50,7 +45,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
 
 // --- Menu Data Structure ---
 const data = {
@@ -148,7 +142,6 @@ export function AppSidebar() {
 
     // Helper to check active state
     const isActive = (url: string) => pathname === url
-    const isGroupActive = (items: { url: string }[]) => items.some(item => pathname.startsWith(item.url))
 
     return (
         <Sidebar
@@ -278,7 +271,23 @@ export function AppSidebar() {
 }
 
 // Reusable Group Component for consistent layout
-function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: any) {
+interface SidebarItem {
+    title: string;
+    titleAr: string;
+    url?: string;
+    icon?: React.ElementType;
+    items?: SidebarItem[];
+}
+
+interface GroupProps {
+    label: string;
+    items: SidebarItem[];
+    language: string;
+    pathname: string;
+    isRtl: boolean;
+}
+
+function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: GroupProps) {
     const isActive = (url: string) => pathname === url; // Define isActive here for use in this component
 
     return (
@@ -286,14 +295,14 @@ function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: an
             <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-3">{label}</SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu className="gap-2">
-                    {items.map((item: any) => {
+                    {items.map((item) => {
                         // Check if any child is active
-                        const isMainActive = item.items?.some((sub: any) => pathname.startsWith(sub.url))
+                        const isMainActive = item.items?.some((sub) => pathname.startsWith(sub.url || '')) ?? false
 
                         // If it has sub-items (Collapsible Menu)
                         if (item.items) {
                             return (
-                                <CollapsibleMenu key={item.title} item={item} language={language} pathname={pathname} isMainActive={isMainActive} isRtl={isRtl} />
+                                <CollapsibleMenu key={item.title} item={item} language={language} pathname={pathname} isMainActive={isMainActive} />
                             )
                         }
 
@@ -302,20 +311,20 @@ function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: an
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton
                                     asChild
-                                    isActive={isActive(item.url)}
+                                    isActive={isActive(item.url || '')}
                                     tooltip={language === 'ar' ? item.titleAr : item.title}
                                     className={cn(
                                         "h-11 px-4 rounded-xl transition-all duration-300 relative group/btn",
-                                        isActive(item.url)
+                                        isActive(item.url || '')
                                             ? "bg-primary/10 text-primary font-semibold"
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                                     )}
                                 >
-                                    <Link href={item.url}>
-                                        <item.icon className={cn(
+                                    <Link href={item.url!}>
+                                        {item.icon && <item.icon className={cn(
                                             "size-5 transition-all duration-300",
-                                            isActive(item.url) ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
-                                        )} />
+                                            isActive(item.url || '') ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
+                                        )} />}
                                         <span className="ms-3">{language === 'ar' ? item.titleAr : item.title}</span>
                                         <div className="sidebar-active-indicator" />
                                     </Link>
@@ -332,7 +341,14 @@ function CollapsibleSidebarGroup({ label, items, language, pathname, isRtl }: an
 // Collapsible Menu Item Component
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 
-function CollapsibleMenu({ item, language, pathname, isMainActive, isRtl }: any) {
+interface CollapsibleMenuProps {
+    item: SidebarItem;
+    language: string;
+    pathname: string;
+    isMainActive: boolean;
+}
+
+function CollapsibleMenu({ item, language, pathname, isMainActive }: CollapsibleMenuProps) {
     const [isOpen, setIsOpen] = React.useState(isMainActive)
 
     return (
@@ -348,17 +364,17 @@ function CollapsibleMenu({ item, language, pathname, isMainActive, isRtl }: any)
                                 : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                         )}
                     >
-                        <item.icon className={cn(
+                        {item.icon && <item.icon className={cn(
                             "size-5 transition-all duration-300",
                             isMainActive ? "stroke-[2.5px] fill-primary/10" : "stroke-[1.5px]"
-                        )} />
+                        )} />}
                         <span className="ms-3">{language === 'ar' ? item.titleAr : item.title}</span>
                         <ChevronDown className="ms-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180 opacity-50" />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                     <SidebarMenuSub className="ms-9 ps-4 border-s border-muted/50 gap-1 mt-1">
-                        {item.items.map((sub: any) => {
+                        {item.items?.map((sub) => {
                             const isSubActive = pathname === sub.url
                             return (
                                 <SidebarMenuSubItem key={sub.title}>
@@ -372,7 +388,7 @@ function CollapsibleMenu({ item, language, pathname, isMainActive, isRtl }: any)
                                                 : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/30"
                                         )}
                                     >
-                                        <Link href={sub.url}>
+                                        <Link href={sub.url!}>
                                             <span className="text-[13px]">{language === 'ar' ? sub.titleAr : sub.title}</span>
                                             {isSubActive && <div className="absolute left-[-1.1rem] rtl:left-auto rtl:right-[-1.1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />}
                                         </Link>

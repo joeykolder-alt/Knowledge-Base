@@ -1,7 +1,8 @@
 "use client"
 
+import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, LineChart, Line, CartesianGrid } from "recharts"
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { useLanguage } from "@/components/providers"
 
 const data = [
@@ -51,9 +52,16 @@ const dataExamEmployees = [
 
 export function OverviewCharts() {
     const { language } = useLanguage()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return <div className="grid gap-6 md:grid-cols-2 min-h-[400px]" />
 
     return (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 min-w-0">
             {/* Chart 1: Books (Blue Gradient) */}
             <Card className="shadow-sm border bg-card rounded-[2rem]">
                 <CardHeader className="pt-8 px-8">

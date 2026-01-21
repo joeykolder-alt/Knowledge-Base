@@ -10,7 +10,7 @@ export function Unauthorized() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground">403 Unauthorized</h1>
             <p className="max-w-[500px] text-muted-foreground text-lg">
-                Sorry, you don't have permission to access this page. Please contact your administrator if you believe this is an error.
+                Sorry, you don&apos;t have permission to access this page. Please contact your administrator if you believe this is an error.
             </p>
             <div className="flex gap-4 pt-4">
                 <Link href="/">

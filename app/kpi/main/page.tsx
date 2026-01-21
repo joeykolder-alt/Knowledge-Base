@@ -27,6 +27,28 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 
+interface KpiRow {
+    id: number;
+    kpi: string;
+    desc: string;
+    measure: string;
+    note: string;
+    imp: string;
+    util: string;
+    input: string;
+    output: string;
+    sla: string;
+}
+
+interface KpiReport {
+    id: number;
+    name: string;
+    month: string;
+    monthLabel: string;
+    rows: KpiRow[];
+    createdAt?: string;
+}
+
 export default function KpiMainPage() {
     const { language } = useLanguage()
     const router = useRouter()
@@ -85,14 +107,14 @@ export default function KpiMainPage() {
             if (saved) {
                 try {
                     const reports = JSON.parse(saved)
-                    const report = reports.find((r: any) => r.id === Number(reportId))
+                    const report = reports.find((r: KpiReport) => r.id === Number(reportId))
                     if (report) {
                         setReportName(report.name)
                         setMonth(report.month)
                         setRows(report.rows)
                     }
-                } catch (e) {
-                    console.error("Error parsing reports", e)
+                } catch (error) {
+                    console.error("Error parsing reports", error)
                 }
             }
         }
@@ -162,13 +184,13 @@ export default function KpiMainPage() {
                 try {
                     existingReports = JSON.parse(raw)
                     if (!Array.isArray(existingReports)) existingReports = []
-                } catch (e) {
+                } catch {
                     existingReports = []
                 }
             }
 
             if (reportId) {
-                const updatedReports = existingReports.map((r: any) => {
+                const updatedReports = existingReports.map((r: KpiReport) => {
                     if (r.id === Number(reportId)) {
                         return {
                             ...r,
@@ -183,7 +205,7 @@ export default function KpiMainPage() {
                 localStorage.setItem('kpi_reports', JSON.stringify(updatedReports))
             } else {
                 const newReport = {
-                    id: Date.now(),
+                    id: new Date().getTime(),
                     name: finalName,
                     month: month,
                     monthLabel: t.months.find(m => m.val === month)?.label || month,

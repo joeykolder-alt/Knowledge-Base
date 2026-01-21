@@ -34,6 +34,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${plexArabic.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider
