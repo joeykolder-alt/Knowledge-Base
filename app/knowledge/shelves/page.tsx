@@ -28,24 +28,15 @@ export default function ShelvesPage() {
 
     // Load from localStorage
     React.useEffect(() => {
-        const saved = localStorage.getItem('knowledge_shelves')
-        const defaults = initialShelves
+        const saved = localStorage.getItem('knowledge_shelves_v2')
         if (saved) {
             try {
-                const localData = JSON.parse(saved)
-                // Merge logic: add defaults only if they don't exist by title
-                const merged = [...localData]
-                defaults.forEach(def => {
-                    if (!merged.find(m => m.title === def.title)) {
-                        merged.push(def)
-                    }
-                })
-                setShelvesList(merged)
+                setShelvesList(JSON.parse(saved))
             } catch (e) {
-                setShelvesList(defaults)
+                setShelvesList([])
             }
         } else {
-            setShelvesList(defaults)
+            setShelvesList([])
         }
         setIsLoaded(true)
     }, [])
@@ -53,54 +44,11 @@ export default function ShelvesPage() {
     // Save to localStorage
     React.useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem('knowledge_shelves', JSON.stringify(shelvesList))
+            localStorage.setItem('knowledge_shelves_v2', JSON.stringify(shelvesList))
         }
     }, [shelvesList, isLoaded])
 
-    const initialShelves = [
-        {
-            id: 1,
-            title: 'Commercial Quality Control',
-            subtitle: 'Comnication Style',
-            books: 15,
-            cover: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop'
-        },
-        {
-            id: 2,
-            title: 'Sales & Contact Center',
-            subtitle: 'طرق تجديد الاشتراك',
-            books: 8,
-            cover: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'
-        },
-        {
-            id: 3,
-            title: 'Sales & Contact Center',
-            subtitle: 'المجمعات السكنية 🏠',
-            books: 12,
-            cover: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop'
-        },
-        {
-            id: 4,
-            title: 'ALMANASA',
-            subtitle: 'ALMANASA',
-            books: 4,
-            cover: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=800&auto=format&fit=crop'
-        },
-        {
-            id: 5,
-            title: 'Commercial Quality Control',
-            subtitle: 'Discipline Policy',
-            books: 22,
-            cover: 'https://images.unsplash.com/photo-1454165833267-02300063255a?q=80&w=800&auto=format&fit=crop'
-        },
-        {
-            id: 6,
-            title: 'Commercial Quality Control',
-            subtitle: 'Evaluation Criteria',
-            books: 10,
-            cover: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=800&auto=format&fit=crop'
-        },
-    ]
+    const initialShelves: Shelf[] = []
     const [open, setOpen] = useState(false)
     const [name, setName] = useState("")
     const [desc, setDesc] = useState("")
