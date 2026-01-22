@@ -27,18 +27,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/components/providers"
 
-const initialNewsItems: any[] = [
-    {
-        id: 1,
-        title: "Churn Users",
-        summary: "تحديد عوائل (Churn Users) لخدمة العناية بالزبائن لغرض الاتصال بهم لاستبيان الرضا",
-        date: "2024-03-15",
-        author: "Admin",
-        category: "Important",
-        readTime: "5 min",
-        image: null
-    }
-]
+const initialNewsItems: any[] = []
+
+import dynamic from "next/dynamic"
+import "react-quill-new/dist/quill.snow.css"
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
 
 export default function NewsPage() {
     const { language } = useLanguage()
@@ -50,34 +44,36 @@ export default function NewsPage() {
     const [selectedImage, setSelectedImage] = React.useState<File | null>(null)
     const [imagePreview, setImagePreview] = React.useState<string | null>(null)
 
+    const modules = {
+        toolbar: [
+            [{ 'header': [1, 2, false] }],
+            ['bold', 'italic', 'underline', 'blockquote'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link', 'clean']
+        ],
+    }
+
+
     // Load from localStorage
     React.useEffect(() => {
-        const saved = localStorage.getItem('knowledge_news')
-        const defaults = initialNewsItems
+        const saved = localStorage.getItem('knowledge_news_v2')
         if (saved) {
             try {
-                const localData = JSON.parse(saved)
-                // Merge: add defaults that don't exist by title
-                const merged = [...localData]
-                defaults.forEach(def => {
-                    if (!merged.find(m => m.title === def.title)) {
-                        merged.push(def)
-                    }
-                })
-                setNewsItems(merged)
+                setNewsItems(JSON.parse(saved))
             } catch (e) {
-                setNewsItems(defaults)
+                setNewsItems([])
             }
         } else {
-            setNewsItems(defaults)
+            setNewsItems([])
         }
         setIsLoaded(true)
     }, [])
 
+
     // Save to localStorage
     React.useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem('knowledge_news', JSON.stringify(newsItems))
+            localStorage.setItem('knowledge_news_v2', JSON.stringify(newsItems))
         }
     }, [newsItems, isLoaded])
 
@@ -205,12 +201,14 @@ export default function NewsPage() {
 
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">{language === 'ar' ? "محتوى الخبر" : "News Content"}</Label>
-                                    <Textarea
-                                        placeholder={t.newsSummary}
-                                        value={newNews.summary}
-                                        onChange={(e) => setNewNews({ ...newNews, summary: e.target.value })}
-                                        className="min-h-[120px] bg-background border-border focus-visible:ring-primary/20 rounded-xl resize-none py-3 text-foreground"
-                                    />
+                                    <div className="[&_.ql-container]:min-h-[200px] [&_.ql-toolbar]:rounded-t-xl [&_.ql-container]:rounded-b-xl">
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={newNews.summary}
+                                            onChange={(val) => setNewNews({ ...newNews, summary: val })}
+                                            modules={modules}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

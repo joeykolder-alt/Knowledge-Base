@@ -51,7 +51,7 @@ interface Task {
     createdAt: string
 }
 
-const EMP_STORAGE_KEY = 'earthlink_employees'
+const EMP_STORAGE_KEY = 'earthlink_employees_v2'
 const TASK_STORAGE_KEY = 'earthlink_employee_tasks'
 
 export default function EmployeeStatusPage() {
@@ -61,6 +61,7 @@ export default function EmployeeStatusPage() {
     const [searchTerm, setSearchTerm] = React.useState("")
     const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
     const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false)
+    const [isLoaded, setIsLoaded] = React.useState(false)
 
     // New Task Form State
     const [taskType, setTaskType] = React.useState<string>("ISP")
@@ -110,14 +111,15 @@ export default function EmployeeStatusPage() {
                 console.error("Failed to parse tasks", e)
             }
         }
+        setIsLoaded(true)
     }, [])
 
     // --- Save Tasks ---
     React.useEffect(() => {
-        if (tasks.length > 0) {
+        if (isLoaded) {
             localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(tasks))
         }
-    }, [tasks])
+    }, [tasks, isLoaded])
 
     // --- Handlers ---
     const handleOpenTasks = (emp: Employee) => {
