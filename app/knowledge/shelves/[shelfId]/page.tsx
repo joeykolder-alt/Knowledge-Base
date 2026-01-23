@@ -17,7 +17,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, FileText, ArrowLeft, Pencil, Trash2, PlusCircle, Upload, ImageIcon, X } from "lucide-react"
+import { Plus, FileText, ArrowLeft, Pencil, Trash2, PlusCircle, Upload, ImageIcon, X, Library } from "lucide-react"
 import { useLanguage } from "@/components/providers"
 
 // Mock Books
@@ -34,29 +34,34 @@ export default function BooksPage() {
     const { language } = useLanguage()
     const [open, setOpen] = React.useState(false)
     const [booksList, setBooksList] = React.useState<any[]>([])
+    const [shelfTitle, setShelfTitle] = React.useState<string>("")
     const [isLoaded, setIsLoaded] = React.useState(false)
 
-    // Load from localStorage on mount or shelfId change
+    // Load shelf info and books from localStorage
     React.useEffect(() => {
-        const key = `knowledge_books_shelf_${shelfId}`
+        // Load Shelf Title
+        const savedShelves = localStorage.getItem('knowledge_shelves_v2')
+        if (savedShelves) {
+            try {
+                const shelves = JSON.parse(savedShelves)
+                const currentShelf = shelves.find((s: any) => s.id.toString() === shelfId)
+                if (currentShelf) {
+                    setShelfTitle(currentShelf.title)
+                }
+            } catch (e) {
+                console.error("Failed to parse shelves", e)
+            }
+        }
+        const key = `knowledge_books_shelf_${shelfId}_v2`
         const saved = localStorage.getItem(key)
-        const defaults = getInitialBooks()
         if (saved) {
             try {
-                const localData = JSON.parse(saved)
-                // Merge logic: add defaults if they don't exist by title
-                const merged = [...localData]
-                defaults.forEach(def => {
-                    if (!merged.find(m => m.title === def.title)) {
-                        merged.push(def)
-                    }
-                })
-                setBooksList(merged)
+                setBooksList(JSON.parse(saved))
             } catch (e) {
-                setBooksList(defaults)
+                setBooksList([])
             }
         } else {
-            setBooksList(defaults)
+            setBooksList([])
         }
         setIsLoaded(true)
     }, [shelfId])
@@ -64,51 +69,13 @@ export default function BooksPage() {
     // Save to localStorage when books change
     React.useEffect(() => {
         if (isLoaded) {
-            const key = `knowledge_books_shelf_${shelfId}`
+            const key = `knowledge_books_shelf_${shelfId}_v2`
             localStorage.setItem(key, JSON.stringify(booksList))
         }
     }, [booksList, shelfId, isLoaded])
 
     function getInitialBooks() {
-        if (shelfId === "1" || shelfId === "5" || shelfId === "6") {
-            return []
-        }
-        if (shelfId === "2") {
-            return [
-                { id: 1, title: 'FastPay - تطبيق ونقاط بيع 💳', articles: 12, author: 'Finance', cover: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=800&auto=format&fit=crop' },
-                { id: 2, title: 'تعبئة وشراء كارتات الوطني عبر تطبيق كي كارد (Qi Services)', articles: 8, author: 'Tech', cover: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=800&auto=format&fit=crop' },
-                { id: 3, title: 'تعبئة وشراء كارتات الوطني عبر تطبيق كي كارد (Super Qi)', articles: 10, author: 'Tech', cover: 'https://images.unsplash.com/photo-1556742111-a301076d9d18?q=80&w=800&auto=format&fit=crop' },
-                { id: 4, title: 'مكاتب الوكلاء 🏢', articles: 25, author: 'Operations', cover: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800&auto=format&fit=crop' },
-                { id: 5, title: 'مراكز البيع الخاصة بالوطني للإنترنت 🏢', articles: 18, author: 'Sales', cover: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=800&auto=format&fit=crop' },
-                { id: 6, title: 'تجديد الاشتراك عبر منصة تبادل (Visa/MasterCard) 💳', articles: 15, author: 'Finance', cover: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=800&auto=format&fit=crop' },
-                { id: 7, title: 'شراء بطاقات التعبئة عبر تطبيق طماطة 🛒', articles: 7, author: 'Sales', cover: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop' },
-            ]
-        }
-        if (shelfId === "3") {
-            return [
-                {
-                    id: 1,
-                    title: 'المجمعات السكنية 🏠',
-                    details: '📌 جدول المجمعات المفعلة وأرقام الدعم الخاصة بها',
-                    articles: 10,
-                    author: 'Support',
-                    cover: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop'
-                }
-            ]
-        }
-        if (shelfId === "4") {
-            return [
-                {
-                    id: 1,
-                    title: 'ALMANASA',
-                    details: '❓ General Inquiry',
-                    articles: 5,
-                    author: 'Admin',
-                    cover: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800&auto=format&fit=crop'
-                }
-            ]
-        }
-        return initialBooks
+        return []
     }
     const [title, setTitle] = React.useState("")
     const [details, setDetails] = React.useState("")
@@ -117,7 +84,8 @@ export default function BooksPage() {
 
     const t = {
         back: language === 'ar' ? "العودة للرفوف" : "Back to Shelves",
-        pageTitle: language === 'ar' ? `الكتب في الرف #${shelfId}` : `Books in Shelf #${shelfId}`,
+        pageTitle: language === 'ar' ? `الكتب في رف: ${shelfTitle || shelfId}` : `Books in Shelf: ${shelfTitle || shelfId}`,
+        noBooks: language === 'ar' ? "لا توجد كتب في هذا الرف بعد." : "No books in this shelf yet.",
         addBook: language === 'ar' ? "إضافة كتاب" : "Add Book",
         createTitle: language === 'ar' ? "إنشاء كتاب جديد" : "Create New Book",
         createDesc: language === 'ar' ? "قم بإنشاء كتاب ليحتوي المقالات." : "Create a book to hold articles.",
@@ -286,69 +254,76 @@ export default function BooksPage() {
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {booksList.map((book: any) => (
-                    <Card key={book.id} className="group hover:shadow-xl transition-all duration-300 cursor-default bg-card overflow-hidden border-border/50 rounded-2xl">
-                        <div className="aspect-[16/10] bg-muted relative overflow-hidden group">
-                            {book.cover ? (
-                                <img src={book.cover} alt={book.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-blue-50 dark:bg-blue-900/10 text-blue-600/30">
-                                    <FileText className="h-12 w-12" />
-                                </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                        <CardHeader className="pt-4 pb-1">
-                            <CardTitle className="text-lg font-black leading-tight group-hover:text-[#0039a6] transition-colors line-clamp-2">
-                                {book.title}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-1 space-y-2">
-                            {book.details && (
-                                <p className="text-xs text-muted-foreground font-normal line-clamp-2 leading-relaxed">
-                                    {book.details}
-                                </p>
-                            )}
-                            <div className="flex items-center gap-2 text-[11px] text-[#0039a6]/60 font-medium bg-blue-50/50 dark:bg-blue-900/10 w-fit px-2 py-0.5 rounded-md">
-                                <span>{book.articles} {t.articles}</span>
-                                <span className="opacity-30">•</span>
-                                <span>{book.author}</span>
+                {booksList.length > 0 ? (
+                    booksList.map((book: any) => (
+                        <Card key={book.id} className="group hover:shadow-xl transition-all duration-300 cursor-default bg-card overflow-hidden border-border/50 rounded-2xl">
+                            {/* ... existing card content ... */}
+                            <div className="aspect-[16/10] bg-muted relative overflow-hidden group">
+                                {book.cover ? (
+                                    <img src={book.cover} alt={book.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-blue-50 dark:bg-blue-900/10 text-blue-600/30">
+                                        <FileText className="h-12 w-12" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                        </CardContent>
-                        <CardFooter className="flex items-center gap-2 p-4 pt-0">
-                            <Link href={`/knowledge/shelves/${shelfId}/book/${book.id}`} className="flex-1">
-                                <Button variant="secondary" className="w-full">
-                                    {t.openBook}
-                                </Button>
-                            </Link>
-                            <div className="flex shrink-0">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title={t.edit}
-                                    className="h-9 w-9"
-                                    onClick={() => handleEdit(book)}
-                                >
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Link href={`/knowledge/shelves/${shelfId}/book/${book.id}/add-article`}>
-                                    <Button variant="ghost" size="icon" title={t.addArticle} className="h-9 w-9">
-                                        <PlusCircle className="h-4 w-4" />
+                            <CardHeader className="pt-4 pb-1">
+                                <CardTitle className="text-lg font-black leading-tight group-hover:text-[#0039a6] transition-colors line-clamp-2">
+                                    {book.title}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-1 space-y-2">
+                                {book.details && (
+                                    <p className="text-xs text-muted-foreground font-normal line-clamp-2 leading-relaxed">
+                                        {book.details}
+                                    </p>
+                                )}
+                                <div className="flex items-center gap-2 text-[11px] text-[#0039a6]/60 font-medium bg-blue-50/50 dark:bg-blue-900/10 w-fit px-2 py-0.5 rounded-md">
+                                    <span>{book.articles} {t.articles}</span>
+                                    <span className="opacity-30">•</span>
+                                    <span>{book.author}</span>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="grid grid-cols-2 gap-2 p-4 pt-0">
+                                <Link href={`/knowledge/shelves/${shelfId}/book/${book.id}`} className="w-full">
+                                    <Button variant="secondary" className="w-full h-9 font-bold text-xs rounded-lg">
+                                        {t.openBook}
                                     </Button>
                                 </Link>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title={t.delete}
-                                    className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                    onClick={(e) => handleDeleteBook(e, book.id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
-                ))}
+                                <Link href={`/knowledge/shelves/${shelfId}/book/${book.id}/add-article`} className="w-full">
+                                    <Button className="w-full h-9 font-bold text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm gap-2">
+                                        <PlusCircle className="h-3.5 w-3.5" />
+                                        {t.addArticle}
+                                    </Button>
+                                </Link>
+                                <div className="col-span-2 flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 h-9 font-bold text-xs rounded-lg hover:bg-primary/5 hover:text-primary border-border"
+                                        onClick={() => handleEdit(book)}
+                                    >
+                                        <Pencil className="h-3.5 w-3.5 me-2" />
+                                        {t.edit}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 h-9 font-bold text-xs rounded-lg hover:bg-destructive/5 hover:text-destructive border-border"
+                                        onClick={(e) => handleDeleteBook(e, book.id)}
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5 me-2" />
+                                        {t.delete}
+                                    </Button>
+                                </div>
+                            </CardFooter>
+                        </Card>
+                    ))
+                ) : (
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-3xl bg-muted/20">
+                        <Library className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <p className="text-muted-foreground font-medium">{t.noBooks}</p>
+                    </div>
+                )}
             </div>
         </div >
     )

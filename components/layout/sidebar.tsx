@@ -145,7 +145,7 @@ export function AppSidebar() {
 
     return (
         <Sidebar
-            collapsible="icon"
+            collapsible="offcanvas"
             side={isRtl ? "right" : "left"}
             variant="sidebar"
             className="border-sidebar-border bg-sidebar text-sidebar-foreground"

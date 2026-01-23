@@ -41,12 +41,47 @@ export default function AddArticlePage() {
         setIsSubmitting(true)
 
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 800))
 
-        console.log("Saving article:", { title, content, shelfId, bookId })
+        const key = `knowledge_articles_book_${bookId}_v2`
+        const saved = localStorage.getItem(key)
+        let articles = []
+        if (saved) {
+            try {
+                articles = JSON.parse(saved)
+            } catch (e) {
+                articles = []
+            }
+        }
+
+        const newArticle = {
+            id: Date.now(),
+            title,
+            content,
+            author: "Admin User", // Mock author for now
+            updatedAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+            views: 0
+        }
+
+        localStorage.setItem(key, JSON.stringify([...articles, newArticle]))
+
+        // Also update the book's article count in the shelf
+        const shelfKey = `knowledge_books_shelf_${shelfId}_v2`
+        const shelfSaved = localStorage.getItem(shelfKey)
+        if (shelfSaved) {
+            try {
+                const books = JSON.parse(shelfSaved)
+                const updatedBooks = books.map((b: any) =>
+                    b.id.toString() === bookId ? { ...b, articles: (b.articles || 0) + 1 } : b
+                )
+                localStorage.setItem(shelfKey, JSON.stringify(updatedBooks))
+            } catch (e) {
+                console.error("Failed to update book article count", e)
+            }
+        }
 
         setIsSubmitting(false)
-        router.back()
+        router.push(`/knowledge/shelves/${shelfId}/book/${bookId}`)
     }
 
     const modules = {
@@ -83,7 +118,7 @@ export default function AddArticlePage() {
                         <X className="me-2 h-4 w-4" />
                         {t.cancel}
                     </Button>
-                    <Button onClick={handleSave} disabled={isSubmitting}>
+                    <Button onClick={handleSave} disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-bold">
                         {isSubmitting ? (
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent me-2" />
                         ) : (
