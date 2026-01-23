@@ -23,8 +23,16 @@ import {
     TrendingUp,
     Settings,
     User,
-    BarChart3
+    BarChart3,
 } from "lucide-react"
+import { format } from "date-fns"
+import { ar, enUS } from "date-fns/locale"
+import { Calendar } from "@/components/ui/calendar"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,7 +76,18 @@ interface Employee {
     department: 'INBOUND' | 'NONIP' | 'OUTBOUND' | 'SALES'
 }
 
-const STORAGE_KEY = 'earthlink_employees'
+const STORAGE_KEY = 'earthlink_employees_v2'
+const TASK_STORAGE_KEY = 'earthlink_employee_tasks'
+
+const DEFAULT_TASKS = [
+    "ISP",
+    "Grafana",
+    "Contact Center Portal",
+    "Agent Portal",
+    "Alwatani Portal",
+    "QGIS",
+    "Postman"
+]
 
 export default function NewEmployeePage() {
     const { language } = useLanguage()
@@ -138,7 +157,8 @@ export default function NewEmployeePage() {
             resultTitle: language === 'ar' ? "نتائج الحصر" : "Census Results",
             noResults: language === 'ar' ? "لا يوجد موظفين تطابق هذه المعايير" : "No employees match these criteria",
             totalCount: language === 'ar' ? "إجمالي العدد" : "Total Count",
-        }
+        },
+        emptyState: language === 'ar' ? "لا يوجد موظفين حالياً" : "No employees found",
     }
 
     // --- Effects ---
@@ -151,11 +171,7 @@ export default function NewEmployeePage() {
                 console.error("Failed to parse employees", e)
             }
         } else {
-            const mockData: Employee[] = [
-                { id: '1', employeeId: '101', name: 'علي حسن', phone: '07701112233', joiningDate: '2023-11-01', status: 'active', department: 'SALES' },
-                { id: '2', employeeId: '102', name: 'زينب عباس', phone: '07804445566', joiningDate: '2023-12-15', status: 'active', department: 'INBOUND' },
-                { id: '3', employeeId: '103', name: 'عمر فاروق', phone: '07507778899', joiningDate: '2024-01-20', status: 'inactive', department: 'OUTBOUND' },
-            ]
+            const mockData: Employee[] = []
             setEmployees(mockData)
         }
         setIsLoaded(true)
@@ -176,11 +192,33 @@ export default function NewEmployeePage() {
                 emp.id === editingEmployee.id ? { ...emp, ...formData } as Employee : emp
             ))
         } else {
+            const newId = Math.random().toString(36).substring(7)
             const newEmp: Employee = {
                 ...formData,
-                id: Math.random().toString(36).substring(7),
+                id: newId,
             } as Employee
             setEmployees([newEmp, ...employees])
+
+            // Create Default Tasks
+            const savedTasks = localStorage.getItem(TASK_STORAGE_KEY)
+            let currentTasks = []
+            if (savedTasks) {
+                try {
+                    currentTasks = JSON.parse(savedTasks)
+                } catch (e) {
+                    console.error("Failed to parse tasks", e)
+                }
+            }
+
+            const newTasks = DEFAULT_TASKS.map(title => ({
+                id: Math.random().toString(36).substring(7),
+                employeeId: newId,
+                title: title,
+                status: 'In Progress',
+                createdAt: new Date().toISOString()
+            }))
+
+            localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify([...currentTasks, ...newTasks]))
         }
 
         setIsDialogOpen(false)
@@ -369,58 +407,47 @@ export default function NewEmployeePage() {
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-xl border bg-card">
-                            <DialogHeader className="p-6 bg-muted/30 border-b border-border">
-                                <DialogTitle className="text-lg font-bold text-foreground">{editingEmployee ? t.form.editTitle : t.form.addTitle}</DialogTitle>
-                                <DialogDescription className="text-xs text-muted-foreground">
+                            <DialogHeader className="p-6 bg-gradient-to-b from-muted/50 to-muted/20 border-b border-border">
+                                <DialogTitle className="text-xl font-bold text-foreground">
+                                    {editingEmployee ? t.form.editTitle : t.form.addTitle}
+                                </DialogTitle>
+                                <DialogDescription className="text-sm font-medium text-muted-foreground mt-1.5">
                                     {t.form.desc}
                                 </DialogDescription>
                             </DialogHeader>
 
                             <div className="p-6 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelName}</Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Name */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelName}</Label>
                                         <Input
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium text-foreground"
+                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium focus-visible:ring-primary"
                                             placeholder="Ali Hassan"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelId}</Label>
+
+                                    {/* ID */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelId}</Label>
                                         <Input
                                             value={formData.employeeId}
                                             onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium text-foreground"
+                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium focus-visible:ring-primary"
                                             placeholder="101"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelPhone}</Label>
-                                        <Input
-                                            value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium text-foreground"
-                                            placeholder="0770XXXXXXX"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelDate}</Label>
-                                        <Input
-                                            type="date"
-                                            value={formData.joiningDate}
-                                            onChange={(e) => setFormData({ ...formData, joiningDate: e.target.value })}
-                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium text-foreground"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelDept}</Label>
+
+                                    {/* Department */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelDept}</Label>
                                         <Select
                                             value={formData.department}
                                             onValueChange={(val: any) => setFormData({ ...formData, department: val })}
                                         >
-                                            <SelectTrigger className="h-10 bg-background border-border rounded-lg text-sm font-medium text-foreground">
+                                            <SelectTrigger className="h-10 bg-background border-border rounded-lg text-sm font-medium flex items-center focus:ring-primary">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -431,15 +458,63 @@ export default function NewEmployeePage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-muted-foreground uppercase">{t.form.labelStatus}</Label>
+
+                                    {/* Phone */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelPhone}</Label>
+                                        <Input
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="h-10 bg-background border-border rounded-lg text-sm font-medium focus-visible:ring-primary"
+                                            placeholder="0770XXXXXXX"
+                                        />
+                                    </div>
+
+                                    {/* Date */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelDate}</Label>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "h-10 w-full justify-start text-left font-normal bg-background border-border rounded-lg text-sm text-foreground focus-visible:ring-primary",
+                                                        !formData.joiningDate && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {formData.joiningDate ? (
+                                                        format(new Date(formData.joiningDate), "PPP", { locale: language === 'ar' ? ar : enUS })
+                                                    ) : (
+                                                        <span>{language === 'ar' ? "اختر تاريخ" : "Pick a date"}</span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={formData.joiningDate ? new Date(formData.joiningDate) : undefined}
+                                                    onSelect={(date) => date && setFormData({ ...formData, joiningDate: date.toISOString().split('T')[0] })}
+                                                    initialFocus
+                                                    locale={language === 'ar' ? ar : enUS}
+                                                    dir={language === 'ar' ? 'rtl' : 'ltr'}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t.form.labelStatus}</Label>
                                         <div className="flex gap-2">
                                             <Button
                                                 type="button"
                                                 variant={formData.status === 'active' ? 'default' : 'outline'}
                                                 onClick={() => setFormData({ ...formData, status: 'active' })}
                                                 className={cn("flex-1 h-10 rounded-lg text-xs font-bold transition-all",
-                                                    formData.status === 'active' && "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                                    formData.status === 'active'
+                                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
+                                                        : "bg-background hover:bg-muted text-muted-foreground border-border"
                                                 )}
                                             >
                                                 {t.form.active}
@@ -448,7 +523,11 @@ export default function NewEmployeePage() {
                                                 type="button"
                                                 variant={formData.status === 'inactive' ? 'destructive' : 'outline'}
                                                 onClick={() => setFormData({ ...formData, status: 'inactive' })}
-                                                className="flex-1 h-10 rounded-lg text-xs font-bold"
+                                                className={cn("flex-1 h-10 rounded-lg text-xs font-bold transition-all",
+                                                    formData.status === 'inactive'
+                                                        ? "bg-rose-600 hover:bg-rose-700 text-white border-transparent"
+                                                        : "bg-background hover:bg-muted text-muted-foreground border-border"
+                                                )}
                                             >
                                                 {t.form.inactive}
                                             </Button>
@@ -594,7 +673,7 @@ export default function NewEmployeePage() {
                 {filteredEmployees.length === 0 && (
                     <div className="py-20 text-center">
                         <Users className="h-10 w-10 text-muted mx-auto mb-2" />
-                        <p className="text-sm font-bold text-muted-foreground">لا يوجد موظفين حالياً</p>
+                        <p className="text-sm font-bold text-muted-foreground">{t.emptyState}</p>
                     </div>
                 )}
             </div>
