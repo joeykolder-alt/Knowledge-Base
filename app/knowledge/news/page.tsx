@@ -9,6 +9,19 @@ import { Search, Plus, Calendar, User, Clock, ArrowRight, FileQuestion, Upload, 
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp,
+  doc
+} from "firebase/firestore"
+import { db } from "@/lib/firebase"
+
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -53,30 +66,24 @@ export default function NewsPage() {
         ],
     }
 
+React.useEffect(() => {
+  const loadNews = async () => {
+    const q = query(
+      collection(db, "news"),
+      orderBy("createdAt", "desc")
+    )
+    const snap = await getDocs(q)
+    const data = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }))
+    setNewsItems(data)
+  }
 
-    // Load from localStorage
-    React.useEffect(() => {
-        const saved = localStorage.getItem('knowledge_news_v2')
-        if (saved) {
-            try {
-                setNewsItems(JSON.parse(saved))
-            } catch (e) {
-                setNewsItems([])
-            }
-        } else {
-            setNewsItems([])
-        }
-        setIsLoaded(true)
-    }, [])
+  loadNews()
+}, [])
 
-
-    // Save to localStorage
-    React.useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem('knowledge_news_v2', JSON.stringify(newsItems))
-        }
-    }, [newsItems, isLoaded])
-
+    
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
@@ -103,36 +110,42 @@ export default function NewsPage() {
         setOpen(true)
     }
 
-    const handleDelete = (id: number) => {
-        if (confirm(language === 'ar' ? "هل أنت متأكد من حذف هذا الخبر؟" : "Are you sure you want to delete this news?")) {
-            setNewsItems(newsItems.filter(item => item.id !== id))
-        }
-    }
+   const handleDelete = async (id: number) => {
+  if (!confirm(language === 'ar' ? "هل أنت متأكد من حذف هذا الخبر؟" : "Are you sure?")) return
 
-    const handleSaveNews = () => {
-        if (!newNews.title || !newNews.summary) return
+  await deleteDoc(doc(db, "news", String(id)))
+  setNewsItems(newsItems.filter(item => item.id !== id))
+}
 
-        if (editingId) {
-            setNewsItems(newsItems.map(item =>
-                item.id === editingId
-                    ? { ...item, ...newNews, image: imagePreview }
-                    : item
-            ))
-        } else {
-            const item = {
-                id: Date.now(),
-                ...newNews,
-                date: new Date().toISOString().split('T')[0],
-                author: "Admin",
-                readTime: "3 min",
-                image: imagePreview
-            }
-            setNewsItems([item, ...newsItems])
-        }
+   const handleSaveNews = async () => {
+  if (!newNews.title || !newNews.summary) return
 
-        setOpen(false)
-        resetForm()
-    }
+  if (editingId) {
+    await updateDoc(doc(db, "news", String(editingId)), {
+      ...newNews,
+      image: imagePreview,
+      updatedAt: serverTimestamp(),
+    })
+  } else {
+    await addDoc(collection(db, "news"), {
+      ...newNews,
+      image: imagePreview,
+      author: "Admin",
+      readTime: "3 min",
+      date: new Date().toISOString().split("T")[0],
+      createdAt: serverTimestamp(),
+    })
+  }
+
+  setOpen(false)
+  resetForm()
+
+  // إعادة تحميل بدون تغيير UI
+  const snap = await getDocs(
+    query(collection(db, "news"), orderBy("createdAt", "desc"))
+  )
+  setNewsItems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+}
 
     const t = {
         title: language === 'ar' ? "الأخبار" : "News",

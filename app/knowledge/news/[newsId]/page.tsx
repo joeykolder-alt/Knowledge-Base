@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator"
 import { ReadHistoryTable } from "@/components/knowledge/read-history-table"
 import { ArrowLeft, Calendar, User, Clock, FileText, ImageIcon } from "lucide-react"
 import { useLanguage } from "@/components/providers"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 export default function NewsDetailPage() {
     const params = useParams()
@@ -17,21 +19,31 @@ export default function NewsDetailPage() {
     const [news, setNews] = React.useState<any>(null)
     const [isLoaded, setIsLoaded] = React.useState(false)
 
-    React.useEffect(() => {
-        const saved = localStorage.getItem('knowledge_news_v2')
-        if (saved) {
-            try {
-                const newsItems = JSON.parse(saved)
-                const item = newsItems.find((n: any) => n.id.toString() === newsId)
-                if (item) {
-                    setNews(item)
-                }
-            } catch (e) {
-                console.error("Failed to parse news", e)
+   
+   React.useEffect(() => {
+    if (!newsId) return
+
+    const fetchNews = async () => {
+        try {
+            const ref = doc(db, "news", newsId as string)
+            const snap = await getDoc(ref)
+
+            if (snap.exists()) {
+                setNews({ id: snap.id, ...snap.data() })
+            } else {
+                setNews(null)
             }
+        } catch (e) {
+            console.error("Failed to load news", e)
+            setNews(null)
+        } finally {
+            setIsLoaded(true)
         }
-        setIsLoaded(true)
-    }, [newsId])
+    }
+
+    fetchNews()
+}, [newsId])
+
 
     const t = {
         back: language === 'ar' ? "العودة للأخبار" : "Back to News",
