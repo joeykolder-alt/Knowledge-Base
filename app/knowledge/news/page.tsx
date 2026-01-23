@@ -52,7 +52,7 @@ export default function NewsPage() {
     const [newsItems, setNewsItems] = React.useState<any[]>([])
     const [isLoaded, setIsLoaded] = React.useState(false)
     const [open, setOpen] = React.useState(false)
-    const [editingId, setEditingId] = React.useState<number | null>(null)
+const [editingId, setEditingId] = React.useState<string | null>(null)
     const [newNews, setNewNews] = React.useState({ title: "", summary: "", category: "New" })
     const [selectedImage, setSelectedImage] = React.useState<File | null>(null)
     const [imagePreview, setImagePreview] = React.useState<string | null>(null)
@@ -110,32 +110,33 @@ React.useEffect(() => {
         setOpen(true)
     }
 
-   const handleDelete = async (id: number) => {
-  if (!confirm(language === 'ar' ? "هل أنت متأكد من حذف هذا الخبر؟" : "Are you sure?")) return
-
-  await deleteDoc(doc(db, "news", String(id)))
+   const handleDelete = async (id: string) => {
+  if (!confirm(language === 'ar' ? "هل أنت متأكد؟" : "Are you sure?")) return
+  await deleteDoc(doc(db, "news", id))
   setNewsItems(newsItems.filter(item => item.id !== id))
 }
+
 
    const handleSaveNews = async () => {
   if (!newNews.title || !newNews.summary) return
 
-  if (editingId) {
-    await updateDoc(doc(db, "news", String(editingId)), {
-      ...newNews,
-      image: imagePreview,
-      updatedAt: serverTimestamp(),
-    })
-  } else {
-    await addDoc(collection(db, "news"), {
-      ...newNews,
-      image: imagePreview,
-      author: "Admin",
-      readTime: "3 min",
-      date: new Date().toISOString().split("T")[0],
-      createdAt: serverTimestamp(),
-    })
-  }
+ if (editingId) {
+  await updateDoc(doc(db, "news", editingId), {
+    ...newNews,
+    image: imagePreview,
+    updatedAt: serverTimestamp(),
+  })
+} else {
+  await addDoc(collection(db, "news"), {
+    ...newNews,
+    image: imagePreview,
+    author: "Admin",
+    readTime: "3 min",
+    date: new Date().toISOString().split("T")[0],
+    createdAt: serverTimestamp(),
+  })
+}
+
 
   setOpen(false)
   resetForm()
