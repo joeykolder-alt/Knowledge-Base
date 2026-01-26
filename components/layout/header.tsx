@@ -25,9 +25,7 @@ export function Header() {
         <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
           <div className="flex items-center gap-6">
             <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
-            <div className="hidden md:flex">
-              <Logo className="scale-75 origin-left" />
-            </div>
+
           </div>
           <div className="flex flex-1 items-center justify-end gap-x-6">
             <div className="w-full flex-1 md:w-auto md:flex-none hidden lg:block" />
@@ -47,9 +45,7 @@ export function Header() {
       <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
         <div className="flex items-center gap-6">
           <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
-          <div className="hidden md:flex">
-            <Logo className="scale-75 origin-left" />
-          </div>
+
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-x-6">

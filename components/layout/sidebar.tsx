@@ -68,15 +68,7 @@ const data = {
         }
     ],
     management: [
-        {
-            title: "Employees",
-            titleAr: "الموظفين",
-            icon: Users,
-            items: [
-                { title: "New Employee", titleAr: "موظف جديد", url: "/employees/new" },
-                { title: "Employee Status", titleAr: "حالة الموظف", url: "/employees/status" },
-            ]
-        },
+
         {
             title: "Quality & Perf.",
             titleAr: "الجودة والأداء",
@@ -88,10 +80,12 @@ const data = {
             ]
         },
         {
-            title: "K.M KPIs",
-            titleAr: "مؤشرات الأداء",
+            title: "K.M",
+            titleAr: "ادارة المعرفة",
             icon: BarChart3,
             items: [
+                { title: "New Employee", titleAr: "موظف جديد", url: "/employees/new" },
+                { title: "Employee Status", titleAr: "حالة الموظف", url: "/employees/status" },
                 { title: "KPI", titleAr: "المؤشرات", url: "/kpi/main" },
                 { title: "KPI Reports", titleAr: "تقارير المؤشرات", url: "/kpi/reports" },
                 { title: "TaskEM", titleAr: "المهام", url: "/kpi/taskem" },
