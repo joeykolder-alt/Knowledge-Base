@@ -11,25 +11,46 @@ import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/components/providers"
 import TiptapEditor from "@/components/tiptap-editor"
 
-export default function AddArticlePage() {
+export default function EditArticlePage() {
     const params = useParams()
     const router = useRouter()
-    const { shelfId, bookId } = params
+    const { shelfId, bookId, articleId } = params
     const { language } = useLanguage()
     const [title, setTitle] = React.useState("")
     const [content, setContent] = React.useState("")
     const [isSubmitting, setIsSubmitting] = React.useState(false)
+    const [isLoading, setIsLoading] = React.useState(true)
 
     const t = {
-        back: language === 'ar' ? "العودة للكتاب" : "Back to Book",
-        pageTitle: language === 'ar' ? "إضافة مقال جديد" : "Add New Article",
+        back: language === 'ar' ? "العودة" : "Back",
+        pageTitle: language === 'ar' ? "تعديل المقال" : "Edit Article",
         articleTitle: language === 'ar' ? "عنوان المقال" : "Article Title",
         titlePlaceholder: language === 'ar' ? "أدخل عنوان المقال" : "Enter article title",
         content: language === 'ar' ? "محتوى المقال" : "Article Content",
-        save: language === 'ar' ? "حفظ المقال" : "Save Article",
+        save: language === 'ar' ? "حفظ التعديلات" : "Save Changes",
         cancel: language === 'ar' ? "إلغاء" : "Cancel",
         saving: language === 'ar' ? "جاري الحفظ..." : "Saving...",
     }
+
+    React.useEffect(() => {
+        const key = `knowledge_articles_book_${bookId}_v2`
+        const saved = localStorage.getItem(key)
+        if (saved) {
+            try {
+                const articles = JSON.parse(saved)
+                const article = articles.find((a: any) => a.id.toString() === articleId)
+                if (article) {
+                    setTitle(article.title)
+                    setContent(article.content)
+                } else {
+                    router.push(`/knowledge/shelves/${shelfId}/book/${bookId}`)
+                }
+            } catch (e) {
+                console.error("Failed to parse articles", e)
+            }
+        }
+        setIsLoading(false)
+    }, [bookId, articleId, router, shelfId])
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -42,38 +63,18 @@ export default function AddArticlePage() {
 
         const key = `knowledge_articles_book_${bookId}_v2`
         const saved = localStorage.getItem(key)
-        let articles = []
+
         if (saved) {
             try {
-                articles = JSON.parse(saved)
-            } catch (e) {
-                articles = []
-            }
-        }
-
-        const newArticle = {
-            id: Date.now(),
-            title,
-            content,
-            author: "Admin User", // Mock author for now
-            updatedAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            views: 0
-        }
-
-        localStorage.setItem(key, JSON.stringify([...articles, newArticle]))
-
-        // Also update the book's article count in the shelf
-        const shelfKey = `knowledge_books_shelf_${shelfId}_v2`
-        const shelfSaved = localStorage.getItem(shelfKey)
-        if (shelfSaved) {
-            try {
-                const books = JSON.parse(shelfSaved)
-                const updatedBooks = books.map((b: any) =>
-                    b.id.toString() === bookId ? { ...b, articles: (b.articles || 0) + 1 } : b
+                const articles = JSON.parse(saved)
+                const updatedArticles = articles.map((a: any) =>
+                    a.id.toString() === articleId
+                        ? { ...a, title, content, updatedAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }
+                        : a
                 )
-                localStorage.setItem(shelfKey, JSON.stringify(updatedBooks))
+                localStorage.setItem(key, JSON.stringify(updatedArticles))
             } catch (e) {
-                console.error("Failed to update book article count", e)
+                console.error("Failed to update article", e)
             }
         }
 
@@ -81,7 +82,9 @@ export default function AddArticlePage() {
         router.push(`/knowledge/shelves/${shelfId}/book/${bookId}`)
     }
 
-
+    if (isLoading) {
+        return <div className="p-10 text-center">Loading...</div>
+    }
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-10">

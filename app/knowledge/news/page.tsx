@@ -26,13 +26,9 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/components/providers"
+import TiptapEditor from "@/components/tiptap-editor"
 
 const initialNewsItems: any[] = []
-
-import dynamic from "next/dynamic"
-import "react-quill-new/dist/quill.snow.css"
-
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
 
 export default function NewsPage() {
     const { language } = useLanguage()
@@ -43,16 +39,6 @@ export default function NewsPage() {
     const [newNews, setNewNews] = React.useState({ title: "", summary: "", category: "New" })
     const [selectedImage, setSelectedImage] = React.useState<File | null>(null)
     const [imagePreview, setImagePreview] = React.useState<string | null>(null)
-
-    const modules = {
-        toolbar: [
-            [{ 'header': [1, 2, false] }],
-            ['bold', 'italic', 'underline', 'blockquote'],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            ['link', 'clean']
-        ],
-    }
-
 
     // Load from localStorage
     React.useEffect(() => {
@@ -134,6 +120,11 @@ export default function NewsPage() {
         resetForm()
     }
 
+    // Helper to strip HTML for summary view
+    const stripHtml = (html: string) => {
+        return html.replace(/<[^>]*>?/gm, '');
+    }
+
     const t = {
         title: language === 'ar' ? "الأخبار" : "News",
         subtitle: language === 'ar' ? "إدارة الأخبار والمحتوى" : "Manage news and content",
@@ -171,7 +162,7 @@ export default function NewsPage() {
                                 {t.addNews}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border border-border shadow-2xl rounded-3xl bg-card">
+                        <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden border border-border shadow-2xl rounded-3xl bg-card max-h-[90vh] flex flex-col">
                             <div className="bg-primary p-6 text-primary-foreground shrink-0 leading-none">
                                 <DialogHeader>
                                     <div className="flex items-center gap-3">
@@ -188,7 +179,7 @@ export default function NewsPage() {
                                 </DialogHeader>
                             </div>
 
-                            <div className="p-6 space-y-5 bg-card">
+                            <div className="p-6 space-y-5 bg-card overflow-y-auto custom-scrollbar">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">{t.newsTitle}</Label>
                                     <Input
@@ -201,12 +192,11 @@ export default function NewsPage() {
 
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">{language === 'ar' ? "محتوى الخبر" : "News Content"}</Label>
-                                    <div className="[&_.ql-container]:min-h-[200px] [&_.ql-toolbar]:rounded-t-xl [&_.ql-container]:rounded-b-xl">
-                                        <ReactQuill
-                                            theme="snow"
+                                    <div className="min-h-[300px]">
+                                        <TiptapEditor
                                             value={newNews.summary}
                                             onChange={(val) => setNewNews({ ...newNews, summary: val })}
-                                            modules={modules}
+                                            placeholder={t.newsSummary}
                                         />
                                     </div>
                                 </div>
@@ -259,7 +249,7 @@ export default function NewsPage() {
                                 </div>
                             </div>
 
-                            <DialogFooter className="p-6 bg-muted/20 border-t border-border gap-3">
+                            <DialogFooter className="p-6 bg-muted/20 border-t border-border gap-3 shrink-0">
                                 <Button
                                     variant="outline"
                                     onClick={() => setOpen(false)}
@@ -340,7 +330,7 @@ export default function NewsPage() {
 
                         <CardContent className="flex-1 pt-0">
                             <p className="text-sm text-muted-foreground font-medium line-clamp-3 leading-relaxed">
-                                {news.summary}
+                                {stripHtml(news.summary || "")}
                             </p>
                         </CardContent>
 

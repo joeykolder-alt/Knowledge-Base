@@ -39,7 +39,6 @@ export default function SuggestionsPage() {
         await new Promise(resolve => setTimeout(resolve, 1500))
 
         setIsSubmitting(false)
-        console.log("Suggestion submitted")
         // You would normally show a toast here, assuming sonner or similar is installed.
         // Alert for now or just visual feedback.
         alert(t.success)

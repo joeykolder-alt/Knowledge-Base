@@ -115,13 +115,14 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: TaskCardProps) {
+    const { language } = useLanguage()
     const status = getTaskStatus(task, now)
     const remaining = Math.max(0, Number(task.targetValue) - Number(task.currentValue))
     const progress = Number(task.progress)
 
     const getStatusConfig = () => {
         if (status === 'DONE') return {
-            label: "DONE",
+            label: language === 'ar' ? "مكتمل" : "DONE",
             icon: CheckCircle2,
             stripClass: "bg-emerald-500",
             badgeClass: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
@@ -130,7 +131,7 @@ function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: 
             buttonClass: "hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:text-emerald-800 text-emerald-700"
         }
         if (status === 'FAILED') return {
-            label: "FAILED",
+            label: language === 'ar' ? "فشل" : "FAILED",
             icon: AlertCircle,
             stripClass: "bg-destructive",
             badgeClass: "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-red-400",
@@ -139,7 +140,7 @@ function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: 
             buttonClass: "hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-800 text-red-700"
         }
         return {
-            label: "IN PROGRESS",
+            label: language === 'ar' ? "جاري" : "IN PROGRESS",
             icon: Activity,
             stripClass: "bg-blue-500",
             badgeClass: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
@@ -224,11 +225,17 @@ function TaskCard({ task, t, now, handleEdit, handleDelete, handleOpenUpdate }: 
                 {/* Progress Block */}
                 <div className="space-y-2.5">
                     <div className="flex justify-between items-end">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                            <TrendingUp className="h-3.5 w-3.5" />
-                            {t.progress}
+                        <div className={cn(
+                            "flex items-center gap-1.5 text-xs font-semibold",
+                            status === 'FAILED' ? "text-destructive" : "text-muted-foreground"
+                        )}>
+                            {status === 'FAILED' ? <AlertCircle className="h-3.5 w-3.5" /> : <TrendingUp className="h-3.5 w-3.5" />}
+                            {status === 'FAILED' ? (language === 'ar' ? "منتهي" : "Expired") : t.progress}
                         </div>
-                        <span className="text-sm font-bold font-mono">{progress}%</span>
+                        <span className={cn(
+                            "text-sm font-bold font-mono",
+                            status === 'FAILED' ? "text-destructive" : ""
+                        )}>{progress}%</span>
                     </div>
                     <div className="relative h-2.5 bg-muted rounded-full overflow-hidden">
                         <div

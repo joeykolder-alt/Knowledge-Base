@@ -2,23 +2,42 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ReadHistoryTable } from "@/components/knowledge/read-history-table"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Edit, Share2, Printer, Eye, PlusCircle, FileText, BookOpen } from "lucide-react"
+import { ArrowLeft, Edit, PlusCircle, FileText, BookOpen, ImageIcon, Upload, Eye } from "lucide-react"
 import { useLanguage } from "@/components/providers"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function ArticlePage() {
     const params = useParams()
+    const router = useRouter()
     const { shelfId, bookId } = params
     const { language } = useLanguage()
     const [articles, setArticles] = React.useState<any[]>([])
     const [bookTitle, setBookTitle] = React.useState<string>("")
     const [isLoaded, setIsLoaded] = React.useState(false)
 
+    // Edit State
+    const [openEdit, setOpenEdit] = React.useState(false)
+    const [editTitle, setEditTitle] = React.useState("")
+    const [editDetails, setEditDetails] = React.useState("")
+    const [editCover, setEditCover] = React.useState<string | null>(null)
+
     React.useEffect(() => {
-        // Load Book Title
+        // Load Book Title and Details
         const shelfKey = `knowledge_books_shelf_${shelfId}_v2`
         const savedBooks = localStorage.getItem(shelfKey)
         if (savedBooks) {
@@ -27,6 +46,9 @@ export default function ArticlePage() {
                 const currentBook = books.find((b: any) => b.id.toString() === bookId)
                 if (currentBook) {
                     setBookTitle(currentBook.title)
+                    setEditTitle(currentBook.title)
+                    setEditDetails(currentBook.details || "")
+                    setEditCover(currentBook.cover || null)
                 }
             } catch (e) {
                 console.error("Failed to parse books", e)
@@ -46,11 +68,50 @@ export default function ArticlePage() {
         setIsLoaded(true)
     }, [shelfId, bookId])
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setEditCover(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleSaveBook = (e: React.FormEvent) => {
+        e.preventDefault()
+        const shelfKey = `knowledge_books_shelf_${shelfId}_v2`
+        const savedBooks = localStorage.getItem(shelfKey)
+
+        if (savedBooks) {
+            try {
+                const books = JSON.parse(savedBooks)
+                const updatedBooks = books.map((b: any) =>
+                    b.id.toString() === bookId
+                        ? { ...b, title: editTitle, details: editDetails, cover: editCover }
+                        : b
+                )
+                localStorage.setItem(shelfKey, JSON.stringify(updatedBooks))
+                setBookTitle(editTitle)
+                setOpenEdit(false)
+            } catch (e) {
+                console.error("Failed to update book", e)
+            }
+        }
+    }
+
     const t = {
         back: language === 'ar' ? "العودة للكتب" : "Back to Books",
         share: language === 'ar' ? "مشاركة" : "Share",
         print: language === 'ar' ? "طباعة" : "Print",
-        edit: language === 'ar' ? "تعديل الكتاب" : "Edit Book",
+        edit: language === 'ar' ? "تعديل المقال" : "Edit Article",
+        editDesc: language === 'ar' ? "تعديل تفاصيل المقال." : "Edit article details.",
+        bookTitle: language === 'ar' ? "عنوان المقال" : "Article Title",
+        details: language === 'ar' ? "التفاصيل" : "Details",
+        coverLabel: language === 'ar' ? "غلاف المقال" : "Article Cover",
+        uploadText: language === 'ar' ? "اضغط لرفع صورة" : "Click to upload image",
+        saveBtn: language === 'ar' ? "حفظ التغييرات" : "Save Changes",
         addArticle: language === 'ar' ? "إضافة مقال" : "Add Article",
         readHistory: language === 'ar' ? "سجل القراءة" : "Read History",
         readHistoryDesc: language === 'ar' ? "سجل الموظفين الذين قاموا بالدخول إلى هذا المستند." : "Log of employees who have accessed this document.",
@@ -70,18 +131,29 @@ export default function ArticlePage() {
                     <span className="text-sm font-bold tracking-tight">{t.back}</span>
                 </Link>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <Button variant="ghost" size="sm" className="h-9 font-bold text-xs rounded-lg hover:bg-muted">
-                        <Share2 className="h-4 w-4 mr-2" />
-                        {t.share}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-9 font-bold text-xs rounded-lg hover:bg-muted">
-                        <Printer className="h-4 w-4 mr-2" />
-                        {t.print}
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-9 font-bold text-xs rounded-lg border-border hover:bg-muted">
+
+                    {/* Header Edit Button - repurposing as "Edit Article" shortcut if single article, or "Edit Book" if fallback needed? 
+                        The user asked to edit the article. I will make it navigate to the first article if present. 
+                    */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 font-bold text-xs rounded-lg border-border hover:bg-muted"
+                        onClick={() => {
+                            if (articles.length > 0) {
+                                // Default to editing the first/latest article if clicked from header
+                                router.push(`/knowledge/shelves/${shelfId}/book/${bookId}/edit-article/${articles[0].id}`)
+                            } else {
+                                // Fallback or maybe "Add Article" hint?
+                                // For now, let's keep it robust.
+                            }
+                        }}
+                        disabled={articles.length === 0}
+                    >
                         <Edit className="h-4 w-4 mr-2" />
                         {t.edit}
                     </Button>
+
                     <Link href={`/knowledge/shelves/${shelfId}/book/${bookId}/add-article`}>
                         <Button size="sm" className="h-9 font-bold text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm gap-2">
                             <PlusCircle className="h-4 w-4" />
@@ -96,15 +168,22 @@ export default function ArticlePage() {
                 {isLoaded && articles.length > 0 ? (
                     articles.map((article, idx) => (
                         <article key={article.id} className="prose prose-slate dark:prose-invert max-w-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="mb-6">
-                                <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl mb-2">{article.title}</h1>
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
-                                    <span>{t.updatedBy} {article.updatedAt}</span>
-                                    <span>•</span>
-                                    <span>{t.by} {article.author}</span>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {article.views} {t.views}</span>
+                            <div className="mb-6 flex items-start justify-between gap-4 group">
+                                <div>
+                                    <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl mb-2">{article.title}</h1>
+                                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
+                                        <span>{t.updatedBy} {article.updatedAt}</span>
+                                        <span>•</span>
+                                        <span>{t.by} {article.author}</span>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {article.views} {t.views}</span>
+                                    </div>
                                 </div>
+                                <Link href={`/knowledge/shelves/${shelfId}/book/${bookId}/edit-article/${article.id}`}>
+                                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Edit className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                </Link>
                             </div>
 
                             <div
