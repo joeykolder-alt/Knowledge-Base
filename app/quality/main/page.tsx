@@ -65,7 +65,14 @@ export default function QualityMainPage() {
         const saved = localStorage.getItem('quality_records')
         if (saved) {
             try {
-                const parsed = JSON.parse(saved)
+                let parsed = JSON.parse(saved)
+
+                // Clean "التأهيلية" from notes
+                parsed = parsed.map((record: any) => ({
+                    ...record,
+                    note: record.note ? record.note.replace('التأهيلية', '').trim() : record.note
+                }))
+
                 // Check if data has the new structure (callSrc instead of callType)
                 // OR if data contains old 'Time Management' values
                 const hasOldStructure = parsed.length > 0 && !('callSrc' in parsed[0])
@@ -84,7 +91,7 @@ export default function QualityMainPage() {
             const dummyData: QualityRecord[] = [
                 { id: 1, employeeName: "أحمد علي", date: "2026-01-15", callSrc: "12345", score: 85, weakestArea: "Diagnosis", note: "أداء جيد ولكن يحتاج تحسين في دقة التشخيص" },
                 { id: 2, employeeName: "أحمد علي", date: "2026-01-18", callSrc: "67890", score: 92, weakestArea: "Answer & Ending", note: "مهارات تواصل ممتازة" },
-                { id: 3, employeeName: "أحمد علي", date: "2026-01-22", callSrc: "23456", score: 78, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة التأهيلية" },
+                { id: 3, employeeName: "أحمد علي", date: "2026-01-22", callSrc: "23456", score: 78, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة " },
                 { id: 4, employeeName: "أحمد علي", date: "2026-01-25", callSrc: "78901", score: 88, weakestArea: "Documentation", note: "أداء جيد بشكل عام" },
                 { id: 5, employeeName: "أحمد علي", date: "2026-01-26", callSrc: "34567", score: 90, weakestArea: "Problem Solving", note: "تحسن ملحوظ في الأداء" },
 
@@ -93,9 +100,9 @@ export default function QualityMainPage() {
                 { id: 8, employeeName: "سارة محمد", date: "2026-01-24", callSrc: "89012", score: 87, weakestArea: "Diagnosis", note: "معرفة تقنية جيدة" },
                 { id: 9, employeeName: "سارة محمد", date: "2026-01-26", callSrc: "90123", score: 93, weakestArea: "Documentation", note: "أداء متميز" },
 
-                { id: 10, employeeName: "محمد حسن", date: "2026-01-17", callSrc: "11234", score: 65, weakestArea: "Answer & Ending", note: "يحتاج طرح المزيد من الأسئلة التأهيلية" },
+                { id: 10, employeeName: "محمد حسن", date: "2026-01-17", callSrc: "11234", score: 65, weakestArea: "Answer & Ending", note: "يحتاج طرح المزيد من الأسئلة" },
                 { id: 11, employeeName: "محمد حسن", date: "2026-01-21", callSrc: "22345", score: 70, weakestArea: "Diagnosis", note: "يتحسن ولكن لا يزال بحاجة للعمل" },
-                { id: 12, employeeName: "محمد حسن", date: "2026-01-23", callSrc: "33456", score: 68, weakestArea: "Answer & Ending", note: "يحتاج طرح المزيد من الأسئلة التأهيلية" },
+                { id: 12, employeeName: "محمد حسن", date: "2026-01-23", callSrc: "33456", score: 68, weakestArea: "Answer & Ending", note: "يحتاج طرح المزيد من الأسئلة " },
                 { id: 13, employeeName: "محمد حسن", date: "2026-01-26", callSrc: "44567", score: 72, weakestArea: "Diagnosis", note: "تحسن طفيف" },
 
                 { id: 14, employeeName: "فاطمة كريم", date: "2026-01-14", callSrc: "55678", score: 82, weakestArea: "Documentation", note: "معالجة جيدة للمكالمات" },
@@ -111,9 +118,9 @@ export default function QualityMainPage() {
                 { id: 22, employeeName: "زينب أحمد", date: "2026-01-21", callSrc: "43456", score: 81, weakestArea: "Diagnosis", note: "أداء متوسط" },
                 { id: 23, employeeName: "زينب أحمد", date: "2026-01-25", callSrc: "54567", score: 83, weakestArea: "Documentation", note: "تحسن ملحوظ" },
 
-                { id: 24, employeeName: "حسين عباس", date: "2026-01-17", callSrc: "65678", score: 56, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة التأهيلية" },
+                { id: 24, employeeName: "حسين عباس", date: "2026-01-17", callSrc: "65678", score: 56, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة " },
                 { id: 25, employeeName: "حسين عباس", date: "2026-01-22", callSrc: "76789", score: 62, weakestArea: "Answer & Ending", note: "أداء ضعيف يحتاج تدريب" },
-                { id: 26, employeeName: "حسين عباس", date: "2026-01-26", callSrc: "87890", score: 59, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة التأهيلية" },
+                { id: 26, employeeName: "حسين عباس", date: "2026-01-26", callSrc: "87890", score: 59, weakestArea: "Diagnosis", note: "يحتاج طرح المزيد من الأسئلة " },
 
                 { id: 27, employeeName: "مريم خالد", date: "2026-01-18", callSrc: "98901", score: 94, weakestArea: "Documentation", note: "أداء ممتاز ومتميز" },
                 { id: 28, employeeName: "مريم خالد", date: "2026-01-22", callSrc: "19012", score: 96, weakestArea: "Problem Solving", note: "موظفة نموذجية" },
