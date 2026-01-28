@@ -70,17 +70,18 @@ const data = {
     management: [
 
         {
-            title: "Quality & Perf.",
+            title: "CC Data",
             titleAr: "الجودة والأداء",
             icon: Award,
             items: [
                 { title: "Daily Performance", titleAr: "الأداء اليومي", url: "/quality/daily" },
                 { title: "Quality", titleAr: "الجودة", url: "/quality/main" },
                 { title: "Top 3", titleAr: "أفضل 3", url: "/quality/top3" },
+                { title: "Vacation", titleAr: "طلب اجازة", url: "/quality/vacation" },
             ]
         },
         {
-            title: "K.M",
+            title: "KM Data",
             titleAr: "ادارة المعرفة",
             icon: BarChart3,
             items: [
@@ -112,6 +113,7 @@ const data = {
             titleAr: "النماذج",
             icon: MessageSquarePlus,
             items: [
+                { title: "Incident", titleAr: "نموذج الحادث", url: "/form/incident" },
                 { title: "Suggestions", titleAr: "صندوق الاقتراحات", url: "/form/suggestions" },
                 { title: "Report Request", titleAr: "طلب تبليغ", url: "/form/report-request" }
             ]
@@ -145,11 +147,8 @@ export function AppSidebar() {
             className="border-sidebar-border bg-sidebar text-sidebar-foreground"
         >
             <SidebarHeader className="h-24 flex items-center justify-center px-6 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
-                <div className="flex items-center justify-center overflow-hidden group-data-[collapsible=icon]:hidden">
+                <div className="flex items-center justify-center overflow-hidden group-data-[collapsible=icon]:hidden transition-all duration-300">
                     <Logo />
-                </div>
-                <div className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center hidden">
-                    <Logo showText={false} />
                 </div>
             </SidebarHeader>
 
