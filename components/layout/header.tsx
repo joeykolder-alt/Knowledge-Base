@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Moon, Sun, Search, Bell } from "lucide-react"
 
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { Logo } from "@/components/ui/logo"
 
 export function Header() {
   const { setTheme, theme } = useTheme()
   const { language, toggleLanguage } = useLanguage()
+  // Add safety check for Sidebar context, although it should be present.
+  const { state } = useSidebar()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -25,7 +27,6 @@ export function Header() {
         <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
           <div className="flex items-center gap-6">
             <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
-
           </div>
           <div className="flex flex-1 items-center justify-end gap-x-6">
             <div className="w-full flex-1 md:w-auto md:flex-none hidden lg:block" />
@@ -46,6 +47,12 @@ export function Header() {
         <div className="flex items-center gap-6">
           <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
 
+          {/* Show Logo here only when sidebar is collapsed */}
+          {state === "collapsed" && (
+            <div className="animate-in fade-in zoom-in duration-300">
+              <Logo showText={false} className="py-0" />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-x-6">
