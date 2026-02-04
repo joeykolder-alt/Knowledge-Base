@@ -146,9 +146,9 @@ export function AppSidebar() {
             variant="sidebar"
             className="border-sidebar-border bg-sidebar text-sidebar-foreground"
         >
-            <SidebarHeader className="h-24 flex items-center justify-center px-6 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
-                <div className="flex items-center justify-center overflow-hidden group-data-[collapsible=icon]:hidden transition-all duration-300">
-                    <Logo />
+            <SidebarHeader className="min-h-[10rem] pt-8 pb-5 flex items-center px-4 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
+                <div className="w-full flex items-center justify-start min-h-[6rem] group-data-[collapsible=icon]:hidden transition-all duration-300 pl-2 sm:pl-0">
+                    <Logo className="w-full max-w-full justify-start flex-[0_0_auto]" />
                 </div>
             </SidebarHeader>
 

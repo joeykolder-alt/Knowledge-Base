@@ -1,34 +1,50 @@
+"use client"
+
 import React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { BookOpen } from "lucide-react"
 
 interface LogoProps {
-    className?: string
-    showText?: boolean
+  className?: string
+  showText?: boolean
 }
 
 export function Logo({ className, showText = true }: LogoProps) {
-    return (
-        <Link href="/" className={cn("flex items-center gap-3 select-none cursor-pointer", className)} dir="ltr">
-            {/* Vibrant Modern Icon */}
-            <div className="relative flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 shadow-lg shadow-blue-500/30 ring-1 ring-white/20 group-hover/logo:scale-105 group-hover/logo:shadow-blue-500/50 transition-all duration-300">
-                <BookOpen className="size-5 text-white drop-shadow-sm" strokeWidth={2.5} />
-            </div>
-
-            {showText && (
-                <div className="flex flex-col justify-center">
-                    {/* Primary Brand Name - Adaptive Theme */}
-                    <span className="font-[800] text-lg leading-none text-foreground tracking-tight transition-colors">
-                        Knowledge
-                    </span>
-
-                    {/* Secondary Descriptor - Adaptive Theme */}
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.15em] leading-tight mt-1 transition-colors">
-                        Management System
-                    </span>
-                </div>
-            )}
-        </Link>
-    )
+  return (
+    <Link
+      href="/"
+      className={cn(
+        "flex items-center justify-center select-none cursor-pointer",
+        "w-full",
+        className
+      )}
+      dir="ltr"
+      aria-label="KMS - Knowledge Management System"
+    >
+      {/* Responsive centered container for the logo */}
+      <span
+        className={cn(
+          "flex items-center justify-center w-full max-w-full",
+          "min-h-[3rem] sm:min-h-[4rem]"
+        )}
+      >
+        <Image
+          src="/assets/logo.png"
+          alt="KMS - Knowledge Management System"
+          width={360}
+          height={108}
+          className={cn(
+            "object-contain object-left w-auto max-w-full h-auto",
+            showText
+              ? "h-24 min-h-[5rem] sm:h-28 md:h-[7.5rem]"
+              : "h-10 w-10"
+          )}
+          sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 320px"
+          priority
+          unoptimized
+        />
+      </span>
+    </Link>
+  )
 }
