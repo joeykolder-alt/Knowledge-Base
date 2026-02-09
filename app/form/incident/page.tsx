@@ -6,12 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Smartphone, MapPin, AlertCircle, Send, FileText } from "lucide-react"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Smartphone, MapPin, AlertCircle, Send, FileText, Calendar as CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { ar } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
 export default function IncidentFormPage() {
     const { language } = useLanguage()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [issueType, setIssueType] = useState("")
+    const [incidentDate, setIncidentDate] = useState<Date | undefined>(undefined)
 
     const t = {
         pageTitle: language === 'ar' ? "نموذج الحادث" : "Incident Form",
@@ -19,6 +25,8 @@ export default function IncidentFormPage() {
         subPhonePlaceholder: language === 'ar' ? "أدخل رقم الهاتف" : "Enter phone number",
         zoneLabel: language === 'ar' ? "المنطقة" : "Zone",
         zonePlaceholder: language === 'ar' ? "أدخل المنطقة" : "Enter zone",
+        incidentDateLabel: language === 'ar' ? "تاريخ المشكلة" : "Incident Date",
+        incidentDatePlaceholder: language === 'ar' ? "اختر التاريخ" : "Select date",
         issueTypeLabel: language === 'ar' ? "نوع المشكلة" : "Issue Type",
         issueTypePlaceholder: language === 'ar' ? "اختر نوع المشكلة" : "Select issue type",
         otherIssueLabel: language === 'ar' ? "اكتب نوع المشكلة" : "Describe Problem",
@@ -82,6 +90,41 @@ export default function IncidentFormPage() {
                                 required
                                 className="h-11 bg-background/50 focus:bg-background transition-colors"
                             />
+                        </div>
+
+                        {/* Incident Date */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-primary" />
+                                {t.incidentDateLabel}
+                            </Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className={cn(
+                                            "w-full h-11 justify-start text-start font-normal bg-background/50 hover:bg-background transition-colors",
+                                            !incidentDate && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="me-2 h-4 w-4" />
+                                        {incidentDate ? (
+                                            format(incidentDate, "PPP", { locale: language === 'ar' ? ar : undefined })
+                                        ) : (
+                                            <span>{t.incidentDatePlaceholder}</span>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={incidentDate}
+                                        onSelect={setIncidentDate}
+                                        initialFocus
+                                        locale={language === 'ar' ? ar : undefined}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         {/* Issue Type */}

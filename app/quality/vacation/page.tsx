@@ -17,21 +17,32 @@ import {
 } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 
-// Mock data for other employees with status
-const otherEmployeesOnLeave = [
-    { name: "Sarah Ahmed", date: "2024-02-15", status: "approved" },
-    { name: "Ali Hassan", date: "2024-02-16", status: "pending" },
-    { name: "Noor Ali", date: "2024-02-15", status: "approved" },
+// Mock data for other employees with status - will be filtered based on selected dates
+const allEmployeesLeaveData = [
+    { name: "Sarah Ahmed", fromDate: new Date(2026, 1, 8), toDate: new Date(2026, 1, 12), status: "approved" },
+    { name: "Ali Hassan", fromDate: new Date(2026, 1, 9), toDate: new Date(2026, 1, 11), status: "pending" },
+    { name: "Noor Ali", fromDate: new Date(2026, 1, 10), toDate: new Date(2026, 1, 15), status: "approved" },
+    { name: "Omar Khaled", fromDate: new Date(2026, 1, 15), toDate: new Date(2026, 1, 20), status: "approved" },
+    { name: "Fatima Ali", fromDate: new Date(2026, 1, 5), toDate: new Date(2026, 1, 7), status: "approved" },
 ]
+
+type EmployeeLeave = {
+    name: string
+    fromDate: Date
+    toDate: Date
+    status: string
+}
 
 export default function VacationPage() {
     const { language } = useLanguage()
     const [dateFrom, setDateFrom] = useState<Date>()
     const [dateTo, setDateTo] = useState<Date>()
+    const [employeeName, setEmployeeName] = useState("")
     const [isChecking, setIsChecking] = useState(false)
     const [showInfo, setShowInfo] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [submittedRequest, setSubmittedRequest] = useState<EmployeeLeave | null>(null)
 
     const t = {
         title: language === 'ar' ? "طلب إجازة" : "Vacation Request",
@@ -59,6 +70,26 @@ export default function VacationPage() {
     // Calculate duration
     const duration = dateFrom && dateTo ? differenceInDays(dateTo, dateFrom) + 1 : 0
 
+    // Filter employees who have overlapping leave dates with the selected range
+    const getOverlappingEmployees = (): EmployeeLeave[] => {
+        if (!dateFrom || !dateTo) return []
+        const filtered = allEmployeesLeaveData.filter(emp => {
+            // Check if date ranges overlap
+            return emp.fromDate <= dateTo && emp.toDate >= dateFrom
+        })
+        // Add submitted request if exists
+        if (submittedRequest) {
+            return [submittedRequest, ...filtered]
+        }
+        return filtered
+    }
+    
+    const overlappingEmployees = getOverlappingEmployees()
+    
+    // Count approved and pending
+    const approvedCount = overlappingEmployees.filter(emp => emp.status === 'approved').length
+    const pendingCount = overlappingEmployees.filter(emp => emp.status === 'pending').length
+
     const handleCheck = () => {
         if (!dateFrom || !dateTo) return
         setIsChecking(true)
@@ -73,6 +104,15 @@ export default function VacationPage() {
         e.preventDefault()
         setIsSubmitting(true)
         setTimeout(() => {
+            // Add the submitted request to show in the list
+            if (dateFrom && dateTo && employeeName) {
+                setSubmittedRequest({
+                    name: employeeName,
+                    fromDate: dateFrom,
+                    toDate: dateTo,
+                    status: "pending"
+                })
+            }
             setIsSubmitting(false)
             setIsSubmitted(true)
         }, 1500)
@@ -106,7 +146,13 @@ export default function VacationPage() {
                                             <User className="w-4 h-4 text-muted-foreground" />
                                             {t.nameLabel}
                                         </Label>
-                                        <Input id="name" placeholder={language === 'ar' ? "الاسم الكامل" : "Full Name"} required />
+                                        <Input 
+                                            id="name" 
+                                            placeholder={language === 'ar' ? "الاسم الكامل" : "Full Name"} 
+                                            value={employeeName}
+                                            onChange={(e) => setEmployeeName(e.target.value)}
+                                            required 
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="id" className="flex items-center gap-2">
@@ -261,34 +307,61 @@ export default function VacationPage() {
                                     <Users className="w-4 h-4" />
                                     {t.othersTitle}
                                 </CardTitle>
+                                {overlappingEmployees.length > 0 && (
+                                    <div className="flex items-center gap-3 mt-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                                            <span className="text-xs text-muted-foreground">
+                                                {approvedCount} {t.status.approved}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                                            <span className="text-xs text-muted-foreground">
+                                                {pendingCount} {t.status.pending}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </CardHeader>
                             <CardContent>
-                                <div className="space-y-3">
-                                    {otherEmployeesOnLeave.map((emp, i) => (
-                                        <div key={i} className="flex items-start justify-between bg-background/60 p-3 rounded-lg border border-border/40 shadow-sm">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                                                    {emp.name.charAt(0)}
+                                {overlappingEmployees.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {overlappingEmployees.map((emp, i) => (
+                                            <div key={i} className="flex items-start justify-between bg-background/60 p-3 rounded-lg border border-border/40 shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                                                        {emp.name.charAt(0)}
+                                                    </div>
+                                                    <div className="space-y-0.5">
+                                                        <p className="text-sm font-medium text-foreground leading-none">{emp.name}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {format(emp.fromDate, "MMM d")} - {format(emp.toDate, "MMM d")}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-0.5">
-                                                    <p className="text-sm font-medium text-foreground leading-none">{emp.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{emp.date}</p>
-                                                </div>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "text-[10px] h-5 px-1.5",
+                                                        emp.status === 'approved'
+                                                            ? "bg-green-500/10 text-green-600 border-green-200 hover:bg-green-500/20"
+                                                            : "bg-yellow-500/10 text-yellow-600 border-yellow-200 hover:bg-yellow-500/20"
+                                                    )}
+                                                >
+                                                    {emp.status === 'approved' ? t.status.approved : t.status.pending}
+                                                </Badge>
                                             </div>
-                                            <Badge
-                                                variant="outline"
-                                                className={cn(
-                                                    "text-[10px] h-5 px-1.5",
-                                                    emp.status === 'approved'
-                                                        ? "bg-green-500/10 text-green-600 border-green-200 hover:bg-green-500/20"
-                                                        : "bg-yellow-500/10 text-yellow-600 border-yellow-200 hover:bg-yellow-500/20"
-                                                )}
-                                            >
-                                                {emp.status === 'approved' ? t.status.approved : t.status.pending}
-                                            </Badge>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                                        <p className="text-sm text-muted-foreground">
+                                            {language === 'ar' ? "لا يوجد تعارض في التواريخ" : "No conflicting dates"}
+                                        </p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     )}

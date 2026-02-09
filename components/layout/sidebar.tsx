@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/components/providers"
@@ -18,7 +19,6 @@ import {
     MessageSquarePlus,
 } from "lucide-react"
 
-import { Logo } from "@/components/ui/logo"
 
 import {
     Sidebar,
@@ -52,7 +52,7 @@ const data = {
         {
             title: "Dashboard",
             titleAr: "لوحة التحكم",
-            url: "/",
+            url: "/dashboard",
             icon: LayoutDashboard,
         }
     ],
@@ -146,10 +146,19 @@ export function AppSidebar() {
             variant="sidebar"
             className="border-sidebar-border bg-sidebar text-sidebar-foreground"
         >
-            <SidebarHeader className="min-h-[10rem] pt-8 pb-5 flex items-center px-4 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-md">
-                <div className="w-full flex items-center justify-start min-h-[6rem] group-data-[collapsible=icon]:hidden transition-all duration-300 pl-2 sm:pl-0">
-                    <Logo className="w-full max-w-full justify-start flex-[0_0_auto]" />
-                </div>
+            <SidebarHeader className="h-36 flex items-center justify-center px-4 border-b border-sidebar-border/50 bg-white">
+                <Link href="/dashboard" className="w-full flex items-center justify-center group-data-[collapsible=icon]:hidden transition-all duration-300">
+                    <div className="relative w-44 h-32">
+                        <Image
+                            src="/splash-logo.png"
+                            alt="Knowledge Management System"
+                            fill
+                            className="object-contain mix-blend-multiply"
+                            style={{ filter: "contrast(2) brightness(1.2)" }}
+                            priority
+                        />
+                    </div>
+                </Link>
             </SidebarHeader>
 
             <SidebarContent className="py-8 gap-6 px-2 no-scrollbar">
