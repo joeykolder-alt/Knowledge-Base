@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Moon, Sun, Search, Bell } from "lucide-react"
 
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
-import { Logo } from "@/components/ui/logo"
+import Image from "next/image"
+import Link from "next/link"
 
 export function Header() {
   const { setTheme, theme } = useTheme()
@@ -43,15 +44,24 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 transition-all duration-300">
-      <div className="flex h-20 items-center justify-between px-8 bg-background/60 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/40">
+      <div className={`flex h-20 items-center justify-between px-8 border-b border-border/50 ${state === "collapsed" ? "bg-white dark:bg-slate-900" : "bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40"}`}>
         <div className="flex items-center gap-6">
           <SidebarTrigger className="text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all h-10 w-10 border border-transparent hover:border-primary/20 rounded-xl" />
 
-          {/* Show Logo here only when sidebar is collapsed */}
+          {/* Show Knowledge Tree logo when sidebar is collapsed */}
           {state === "collapsed" && (
-            <div className="animate-in fade-in zoom-in duration-300">
-              <Logo showText={false} className="py-0" />
-            </div>
+            <Link href="/dashboard" className="animate-in fade-in zoom-in duration-300">
+              <div className="relative w-32 h-20">
+                <Image
+                  src="/splash-logo.png"
+                  alt="Knowledge Management System"
+                  fill
+                  className="object-contain mix-blend-multiply dark:invert"
+                  style={{ filter: "contrast(1.8) brightness(1.15)" }}
+                  priority
+                />
+              </div>
+            </Link>
           )}
         </div>
 
